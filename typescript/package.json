@@ -1,0 +1,20 @@
+{
+  "name": "supplychain_chaincode",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.16.3",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "fabric-contract-api": "^2.5.2",
+    "json-stringify-deterministic": "^1.0.8",
+    "sort-keys-recursive": "^2.1.8"
+  }
+}

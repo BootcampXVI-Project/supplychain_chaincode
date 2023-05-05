@@ -4,7 +4,7 @@ The Fabric test network is used to deploy and run this sample. Follow these step
 
 1. Create the network and a channel (from the `SupplychainNetwork` folder).
 ```bash
-   ./network.sh up createChannel -c mychannel -ca -s couchdb
+   ./network.sh up createChannel  -ca -s couchdb
 ```
 
 1. Deploy one of the smart contract implementations (from the `SupplychainNetwork` folder).

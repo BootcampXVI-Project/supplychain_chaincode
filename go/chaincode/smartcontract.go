@@ -210,7 +210,7 @@ func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, 
 }
 
 // SUPPLIER FUNCTION
-// cultivate product
+// cultivate product // gieo trồng sảm phẩm
 func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInterface, userId string, productName string, price float64, description string) error {
 
 	// get user details from the stub ie. Chaincode stub in network using the user id passed
@@ -258,7 +258,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 	return ctx.GetStub().PutState(product.ProductId, productAsBytes)
 }
 
-// havert product
+// havert product // thu hoạch
 func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterface, userId string, productId string) error {
 
 	// get user details from the stub ie. Chaincode stub in network using the user id passed
@@ -578,7 +578,6 @@ func (s *SmartContract) GetAllUsers(ctx contractapi.TransactionContextInterface)
 
 		users = append(users, &user)
 	}
-
 	return users, nil
 }
 

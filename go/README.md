@@ -14,6 +14,19 @@ The Fabric test network is used to deploy and run this sample. Follow these step
    ./network.sh deployCC -ccn basic -ccp ../supplychain_chaincode/go/ -ccl go
 ```
 
+## config peer command
+
+```bash
+export PATH=${PWD}/../bin:$PATH
+export FABRIC_CFG_PATH=$PWD/../config/
+```
+
+You can then set up the environment variables for each organization. The `./scripts/envVar.sh` command is designed to be run as follows.
+
+```bash
+source ./scripts/envVar.sh && setGlobals $ORG
+```
+
 ## after deploy chain code 
 ### Create Ledger
 ```bash

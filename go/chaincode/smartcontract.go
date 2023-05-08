@@ -368,6 +368,7 @@ func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterfac
 	product.Dates.Imported = txTimeAsPtr
 	product.Price = price
 	product.Status = "IMPORTED"
+	product.Actors.ManufacturerId = userId
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
@@ -402,6 +403,10 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 	txTimeAsPtr, errTx := s.GetTxTimestampChannel(ctx)
 	if errTx != nil {
 		return fmt.Errorf("returning error in Transaction TimeStamp")
+	}
+
+	if product.Actors.ManufacturerId != userId {
+		return fmt.Error("Permission denied!")
 	}
 
 	// Updating the product values withe the new values
@@ -443,8 +448,13 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 		return fmt.Errorf("returning error in Transaction TimeStamp")
 	}
 
+	if product.Actors.ManufacturerId != userId {
+		return fmt.Error("Permission denied!")
+	}
+
 	// Updating the product values withe the new values
 	product.Dates.Exported = txTimeAsPtr
+	product.Price = price
 	product.Status = "EXPORTED"
 
 	updatedProductAsBytes, _ := json.Marshal(product)
@@ -486,6 +496,7 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 	// Updating the product values withe the new values
 	product.Dates.Distributed = txTimeAsPtr
 	product.Status = "DISTRIBUTED"
+	product.Actors.DistributorId = userId
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
@@ -527,6 +538,8 @@ func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface,
 	// Updating the product values to be updated after the function
 	product.Dates.Sold = txTimeAsPtr
 	product.Status = "SOLD"
+	product.Price = price
+	product.Actors.RetailerId = userId
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 

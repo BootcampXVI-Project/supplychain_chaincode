@@ -406,7 +406,7 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 	}
 
 	if product.Actors.ManufacturerId != userId {
-		return fmt.Error("Permission denied!")
+		return fmt.Errorf("Permission denied!")
 	}
 
 	// Updating the product values withe the new values
@@ -449,7 +449,7 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 	}
 
 	if product.Actors.ManufacturerId != userId {
-		return fmt.Error("Permission denied!")
+		return fmt.Errorf("Permission denied!")
 	}
 
 	// Updating the product values withe the new values

@@ -82,7 +82,6 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 }
 
 func initCounter(ctx contractapi.TransactionContextInterface) error {
-
 	// Initializing Product Counter
 	ProductCounterBytes, _ := ctx.GetStub().GetState("ProductCounterNO")
 	if ProductCounterBytes == nil {
@@ -211,16 +210,16 @@ func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, 
 
 // SUPPLIER FUNCTION
 // cultivate product // gieo trồng sảm phẩm
-func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInterface, userId string, productName string, price float64, description string) error {
+func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInterface, user User, productName string, price float64, description string) error {
 
 	// get user details from the stub ie. Chaincode stub in network using the user id passed
-	userBytes, _ := ctx.GetStub().GetState(userId)
-	if userBytes == nil {
-		return fmt.Errorf("cannot find User")
-	}
+	// userBytes, _ := ctx.GetStub().GetState(userId)
+	// if userBytes == nil {
+	// 	return fmt.Errorf("cannot find User")
+	// }
 
-	user := new(User)
-	_ = json.Unmarshal(userBytes, user)
+	// user := new(User)
+	// _ = json.Unmarshal(userBytes, user)
 
 	// User type check for the function
 	if user.UserType != "supplier" {
@@ -240,7 +239,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 	dates := ProductDates{}
 	dates.Cultivated = txTimeAsPtr
 	actors := ProductActors{}
-	actors.SupplierId = userId
+	actors.SupplierId = user.UserId
 	var product = Product{
 		ProductId:   "Product" + strconv.Itoa(productCounter),
 		ProductName: productName,
@@ -259,16 +258,16 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 }
 
 // havert product // thu hoạch
-func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterface, userId string, productId string) error {
+func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterface, user User, productId string) error {
 
 	// get user details from the stub ie. Chaincode stub in network using the user id passed
-	userBytes, _ := ctx.GetStub().GetState(userId)
-	if userBytes == nil {
-		return fmt.Errorf("cannot find this user")
-	}
+	// userBytes, _ := ctx.GetStub().GetState(user.UserId)
+	// if userBytes == nil {
+	// 	return fmt.Errorf("cannot find this user")
+	// }
 
-	user := new(User)
-	_ = json.Unmarshal(userBytes, user)
+	// user := new(User)
+	// _ = json.Unmarshal(userBytes, user)
 
 	if user.UserType != "supplier" {
 		return fmt.Errorf("User must be a supplier")
@@ -299,16 +298,16 @@ func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterfa
 }
 
 // supplier update
-func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContextInterface, userId string, productId string, productName string, price float64, description string) error {
+func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContextInterface, user User, productId string, productName string, price float64, description string) error {
 
 	// get user details from the stub ie. Chaincode stub in network using the user id passed
-	userBytes, _ := ctx.GetStub().GetState(userId)
-	if userBytes == nil {
-		return fmt.Errorf("cannot find this user")
-	}
+	// userBytes, _ := ctx.GetStub().GetState(userId)
+	// if userBytes == nil {
+	// 	return fmt.Errorf("cannot find this user")
+	// }
 
-	user := new(User)
-	_ = json.Unmarshal(userBytes, user)
+	// user := new(User)
+	// _ = json.Unmarshal(userBytes, user)
 
 	if user.UserType != "supplier" {
 		return fmt.Errorf("User must be a supplier")
@@ -335,15 +334,15 @@ func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContext
 
 // MANUFACTURER
 // import product
-func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterface, userId string, productId string, price float64) error {
+func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterface, user User, productId string, price float64) error {
 
-	userBytes, _ := ctx.GetStub().GetState(userId)
-	if userBytes == nil {
-		return fmt.Errorf("cannot find User")
-	}
+	// userBytes, _ := ctx.GetStub().GetState(userId)
+	// if userBytes == nil {
+	// 	return fmt.Errorf("cannot find User")
+	// }
 
-	user := new(User)
-	_ = json.Unmarshal(userBytes, user)
+	// user := new(User)
+	// _ = json.Unmarshal(userBytes, user)
 
 	// User type check for the function
 	if user.UserType != "manufacturer" {
@@ -368,7 +367,7 @@ func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterfac
 	product.Dates.Imported = txTimeAsPtr
 	product.Price = price
 	product.Status = "IMPORTED"
-	product.Actors.ManufacturerId = userId
+	product.Actors.ManufacturerId = user.UserId
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
@@ -376,15 +375,15 @@ func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterfac
 }
 
 // manufacture product
-func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInterface, userId string, productId string) error {
+func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInterface, user User, productId string) error {
 
-	userBytes, _ := ctx.GetStub().GetState(userId)
-	if userBytes == nil {
-		return fmt.Errorf("cannot find this user")
-	}
+	// userBytes, _ := ctx.GetStub().GetState(userId)
+	// if userBytes == nil {
+	// 	return fmt.Errorf("cannot find this user")
+	// }
 
-	user := new(User)
-	_ = json.Unmarshal(userBytes, user)
+	// user := new(User)
+	// _ = json.Unmarshal(userBytes, user)
 
 	// User type check for the function
 	if user.UserType != "manufacturer" {
@@ -405,7 +404,7 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 		return fmt.Errorf("returning error in Transaction TimeStamp")
 	}
 
-	if product.Actors.ManufacturerId != userId {
+	if product.Actors.ManufacturerId != user.UserId {
 		return fmt.Errorf("Permission denied!")
 	}
 
@@ -419,15 +418,15 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 }
 
 // export product
-func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterface, userId string, productId string, price float64) error {
+func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterface, user User, productId string, price float64) error {
 
-	userBytes, _ := ctx.GetStub().GetState(userId)
-	if userBytes == nil {
-		return fmt.Errorf("cannot find this user")
-	}
+	// userBytes, _ := ctx.GetStub().GetState(userId)
+	// if userBytes == nil {
+	// 	return fmt.Errorf("cannot find this user")
+	// }
 
-	user := new(User)
-	_ = json.Unmarshal(userBytes, user)
+	// user := new(User)
+	// _ = json.Unmarshal(userBytes, user)
 
 	// User type check for the function
 	if user.UserType != "manufacturer" {
@@ -448,7 +447,7 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 		return fmt.Errorf("returning error in Transaction TimeStamp")
 	}
 
-	if product.Actors.ManufacturerId != userId {
+	if product.Actors.ManufacturerId != user.UserId {
 		return fmt.Errorf("Permission denied!")
 	}
 
@@ -464,15 +463,15 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 
 // DISTRIBUTOR
 // distribute product
-func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInterface, userId string, productId string) error {
+func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInterface, user User, productId string) error {
 
-	userBytes, _ := ctx.GetStub().GetState(userId)
-	if userBytes == nil {
-		return fmt.Errorf("cannot find this user")
-	}
+	// userBytes, _ := ctx.GetStub().GetState(userId)
+	// if userBytes == nil {
+	// 	return fmt.Errorf("cannot find this user")
+	// }
 
-	user := new(User)
-	_ = json.Unmarshal(userBytes, user)
+	// user := new(User)
+	// _ = json.Unmarshal(userBytes, user)
 
 	// User type check for the function
 	if user.UserType != "distributor" {
@@ -496,7 +495,7 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 	// Updating the product values withe the new values
 	product.Dates.Distributed = txTimeAsPtr
 	product.Status = "DISTRIBUTED"
-	product.Actors.DistributorId = userId
+	product.Actors.DistributorId = user.UserId
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
@@ -505,15 +504,15 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 
 // RETAILER
 // sell product
-func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface, userId string, productId string, price float64) error {
+func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface, user User, productId string, price float64) error {
 
-	userBytes, _ := ctx.GetStub().GetState(userId)
-	if userBytes == nil {
-		return fmt.Errorf("cannot find this user")
-	}
+	// userBytes, _ := ctx.GetStub().GetState(userId)
+	// if userBytes == nil {
+	// 	return fmt.Errorf("cannot find this user")
+	// }
 
-	user := new(User)
-	_ = json.Unmarshal(userBytes, user)
+	// user := new(User)
+	// _ = json.Unmarshal(userBytes, user)
 
 	// User type check for the function
 	if user.UserType != "retailer" {
@@ -539,7 +538,7 @@ func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface,
 	product.Dates.Sold = txTimeAsPtr
 	product.Status = "SOLD"
 	product.Price = price
-	product.Actors.RetailerId = userId
+	product.Actors.RetailerId = user.UserId
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 

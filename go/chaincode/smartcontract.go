@@ -95,15 +95,15 @@ func initCounter(ctx contractapi.TransactionContextInterface) error {
 	}
 
 	// Initializing User Counter
-	UserCounterBytes, _ := ctx.GetStub().GetState("UserCounterNO")
-	if UserCounterBytes == nil {
-		var UserCounter = CounterNO{Counter: 0}
-		UserCounterBytes, _ := json.Marshal(UserCounter)
-		err := ctx.GetStub().PutState("UserCounterNO", UserCounterBytes)
-		if err != nil {
-			return fmt.Errorf("failed to Intitate User Counter: %s", err.Error())
-		}
-	}
+	// UserCounterBytes, _ := ctx.GetStub().GetState("UserCounterNO")
+	// if UserCounterBytes == nil {
+	// 	var UserCounter = CounterNO{Counter: 0}
+	// 	UserCounterBytes, _ := json.Marshal(UserCounter)
+	// 	err := ctx.GetStub().PutState("UserCounterNO", UserCounterBytes)
+	// 	if err != nil {
+	// 		return fmt.Errorf("failed to Intitate User Counter: %s", err.Error())
+	// 	}
+	// }
 	return nil
 }
 
@@ -147,71 +147,71 @@ func (s *SmartContract) GetTxTimestampChannel(ctx contractapi.TransactionContext
 }
 
 // sign in
-func (s *SmartContract) SignIn(ctx contractapi.TransactionContextInterface, email string, password string) (*User, error) {
+// func (s *SmartContract) SignIn(ctx contractapi.TransactionContextInterface, email string, password string) (*User, error) {
 
-	results, err := s.GetAllUsers(ctx)
+// 	results, err := s.GetAllUsers(ctx)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	for _, user := range results {
-		_email := (*user).Email
-		_password := (*user).Password
-		_userId := (*user).UserId
-		if _email == email && _password == password {
-			userBytes, _ := ctx.GetStub().GetState(_userId)
-			_user := new(User)
-			_ = json.Unmarshal(userBytes, _user)
-			return _user, nil
-		}
+// 	for _, user := range results {
+// 		_email := (*user).Email
+// 		_password := (*user).Password
+// 		_userId := (*user).UserId
+// 		if _email == email && _password == password {
+// 			userBytes, _ := ctx.GetStub().GetState(_userId)
+// 			_user := new(User)
+// 			_ = json.Unmarshal(userBytes, _user)
+// 			return _user, nil
+// 		}
 
-	}
-	return nil, fmt.Errorf("user is not exists")
-}
+// 	}
+// 	return nil, fmt.Errorf("user is not exists")
+// }
 
 // create user
-func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, email string, password string, username string, address string, userType string, role string) error {
+// func (s *SmartContract) CreateUser(ctx contractapi.TransactionContextInterface, email string, password string, username string, address string, userType string, role string) error {
 
-	results, err := s.GetAllUsers(ctx)
+// 	results, err := s.GetAllUsers(ctx)
 
-	if err != nil {
-		return err
-	}
+// 	if err != nil {
+// 		return err
+// 	}
 
-	for _, user := range results {
-		_email := (*user).Email
-		if _email == email {
-			return fmt.Errorf("this user is exists")
-		}
-	}
+// 	for _, user := range results {
+// 		_email := (*user).Email
+// 		if _email == email {
+// 			return fmt.Errorf("this user is exists")
+// 		}
+// 	}
 
-	userCounter, _ := getCounter(ctx, "UserCounterNO")
-	userCounter++
+// 	userCounter, _ := getCounter(ctx, "UserCounterNO")
+// 	userCounter++
 
-	user := User{
-		UserId:   "User" + strconv.Itoa(userCounter),
-		Email:    email,
-		Password: password,
-		UserName: username,
-		Address:  address,
-		UserType: userType,
-		Role:     role,
-	}
+// 	user := User{
+// 		UserId:   "User" + strconv.Itoa(userCounter),
+// 		Email:    email,
+// 		Password: password,
+// 		UserName: username,
+// 		Address:  address,
+// 		UserType: userType,
+// 		Role:     role,
+// 	}
 
-	userAsBytes, errMarshal := json.Marshal(user)
-	if errMarshal != nil {
-		return fmt.Errorf("marshal Error in Product: %s", errMarshal)
-	}
+// 	userAsBytes, errMarshal := json.Marshal(user)
+// 	if errMarshal != nil {
+// 		return fmt.Errorf("marshal Error in Product: %s", errMarshal)
+// 	}
 
-	incrementCounter(ctx, "UserCounterNO")
+// 	incrementCounter(ctx, "UserCounterNO")
 
-	return ctx.GetStub().PutState(user.UserId, userAsBytes)
-}
+// 	return ctx.GetStub().PutState(user.UserId, userAsBytes)
+// }
 
 // SUPPLIER FUNCTION
 // cultivate product // gieo trồng sảm phẩm
-func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInterface, user User, productName string, price float64, description string) error {
+func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
 	// get user details from the stub ie. Chaincode stub in network using the user id passed
 	// userBytes, _ := ctx.GetStub().GetState(userId)
@@ -243,12 +243,12 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 	actors.SupplierId = user.UserId
 	var product = Product{
 		ProductId:   "Product" + strconv.Itoa(productCounter),
-		ProductName: productName,
+		ProductName: productObj.ProductName,
 		Dates:       dates,
 		Actors:      actors,
-		Price:       price,
+		Price:       productObj.Price,
 		Status:      "CULTIVATING",
-		Description: description,
+		Description: productObj.Description,
 	}
 
 	productAsBytes, _ := json.Marshal(product)
@@ -259,7 +259,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 }
 
 // havert product // thu hoạch
-func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterface, user User, productId string) error {
+func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
 	// get user details from the stub ie. Chaincode stub in network using the user id passed
 	// userBytes, _ := ctx.GetStub().GetState(user.UserId)
@@ -275,7 +275,7 @@ func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterfa
 	}
 
 	// get product details from the stub ie. Chaincode stub in network using the product id passed
-	productBytes, _ := ctx.GetStub().GetState(productId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -299,7 +299,7 @@ func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterfa
 }
 
 // supplier update
-func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContextInterface, user User, productId string, productName string, price float64, description string) error {
+func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
 	// get user details from the stub ie. Chaincode stub in network using the user id passed
 	// userBytes, _ := ctx.GetStub().GetState(userId)
@@ -315,7 +315,7 @@ func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContext
 	}
 
 	// get product details from the stub ie. Chaincode stub in network using the product id passed
-	productBytes, _ := ctx.GetStub().GetState(productId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -324,9 +324,9 @@ func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContext
 	_ = json.Unmarshal(productBytes, product)
 
 	// Updating the product values withe the new values
-	product.ProductName = productName
-	product.Price = price
-	product.Description = description
+	product.ProductName = productObj.ProductName
+	product.Price = productObj.Price
+	product.Description = productObj.Description
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
@@ -335,7 +335,7 @@ func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContext
 
 // MANUFACTURER
 // import product
-func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterface, user User, productId string, price float64) error {
+func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
 	// userBytes, _ := ctx.GetStub().GetState(userId)
 	// if userBytes == nil {
@@ -350,7 +350,7 @@ func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterfac
 		return fmt.Errorf("User must be a manufacturer")
 	}
 
-	productBytes, _ := ctx.GetStub().GetState(productId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -366,7 +366,7 @@ func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterfac
 
 	// Updating the product values withe the new values
 	product.Dates.Imported = txTimeAsPtr
-	product.Price = price
+	product.Price = productObj.Price
 	product.Status = "IMPORTED"
 	product.Actors.ManufacturerId = user.UserId
 
@@ -376,7 +376,7 @@ func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterfac
 }
 
 // manufacture product
-func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInterface, user User, productId string) error {
+func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
 	// userBytes, _ := ctx.GetStub().GetState(userId)
 	// if userBytes == nil {
@@ -391,7 +391,7 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 		return fmt.Errorf("User must be a manufacturer")
 	}
 
-	productBytes, _ := ctx.GetStub().GetState(productId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -419,7 +419,7 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 }
 
 // export product
-func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterface, user User, productId string, price float64) error {
+func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
 	// userBytes, _ := ctx.GetStub().GetState(userId)
 	// if userBytes == nil {
@@ -434,7 +434,7 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 		return fmt.Errorf("User must be a manufacturer")
 	}
 
-	productBytes, _ := ctx.GetStub().GetState(productId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -454,7 +454,7 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 
 	// Updating the product values withe the new values
 	product.Dates.Exported = txTimeAsPtr
-	product.Price = price
+	product.Price = productObj.Price
 	product.Status = "EXPORTED"
 
 	updatedProductAsBytes, _ := json.Marshal(product)
@@ -464,7 +464,7 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 
 // DISTRIBUTOR
 // distribute product
-func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInterface, user User, productId string) error {
+func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
 	// userBytes, _ := ctx.GetStub().GetState(userId)
 	// if userBytes == nil {
@@ -479,7 +479,7 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 		return fmt.Errorf("User must be a distributor")
 	}
 
-	productBytes, _ := ctx.GetStub().GetState(productId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -505,7 +505,7 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 
 // RETAILER
 // sell product
-func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface, user User, productId string, price float64) error {
+func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
 	// userBytes, _ := ctx.GetStub().GetState(userId)
 	// if userBytes == nil {
@@ -521,7 +521,7 @@ func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface,
 	}
 
 	// get product details from the stub ie. Chaincode stub in network using the product id passed
-	productBytes, _ := ctx.GetStub().GetState(productId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -538,7 +538,7 @@ func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface,
 	// Updating the product values to be updated after the function
 	product.Dates.Sold = txTimeAsPtr
 	product.Status = "SOLD"
-	product.Price = price
+	product.Price = productObj.Price
 	product.Actors.RetailerId = user.UserId
 
 	updatedProductAsBytes, _ := json.Marshal(product)
@@ -547,15 +547,15 @@ func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface,
 }
 
 // get a asset
-func (s *SmartContract) GetProduct(ctx contractapi.TransactionContextInterface, productId string) (*Product, error) {
-	productAsBytes, err := ctx.GetStub().GetState(productId)
+func (s *SmartContract) GetProduct(ctx contractapi.TransactionContextInterface, productObj Product) (*Product, error) {
+	productAsBytes, err := ctx.GetStub().GetState(productObj.ProductId)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to read from world state. %s", err.Error())
 	}
 
 	if productAsBytes == nil {
-		return nil, fmt.Errorf("%s does not exist", productId)
+		return nil, fmt.Errorf("%s does not exist", productObj.ProductId)
 	}
 
 	product := new(Product)
@@ -565,36 +565,36 @@ func (s *SmartContract) GetProduct(ctx contractapi.TransactionContextInterface, 
 }
 
 // get all asset
-func (s *SmartContract) GetAllUsers(ctx contractapi.TransactionContextInterface) ([]*User, error) {
-	assetCounter, _ := getCounter(ctx, "UserCounterNO")
-	startKey := "User1"
-	endKey := "User" + strconv.Itoa(assetCounter+1)
-	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+// func (s *SmartContract) GetAllUsers(ctx contractapi.TransactionContextInterface) ([]*User, error) {
+// 	assetCounter, _ := getCounter(ctx, "UserCounterNO")
+// 	startKey := "User1"
+// 	endKey := "User" + strconv.Itoa(assetCounter+1)
+// 	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
 
-	if err != nil {
-		return nil, err
-	}
+// 	if err != nil {
+// 		return nil, err
+// 	}
 
-	defer resultsIterator.Close()
+// 	defer resultsIterator.Close()
 
-	var users []*User
+// 	var users []*User
 
-	for resultsIterator.HasNext() {
-		response, err := resultsIterator.Next()
+// 	for resultsIterator.HasNext() {
+// 		response, err := resultsIterator.Next()
 
-		if err != nil {
-			return nil, err
-		}
+// 		if err != nil {
+// 			return nil, err
+// 		}
 
-		var user User
-		_ = json.Unmarshal(response.Value, &user)
+// 		var user User
+// 		_ = json.Unmarshal(response.Value, &user)
 
-		users = append(users, &user)
-	}
-	return users, nil
-}
+// 		users = append(users, &user)
+// 	}
+// 	return users, nil
+// }
 
-func (s *SmartContract) GetAllProducts(ctx contractapi.TransactionContextInterface) ([]*Product, error) {
+func (s *SmartContract) GetAllProducts(ctx contractapi.TransactionContextInterface, productObj Product) ([]*Product, error) {
 
 	assetCounter, _ := getCounter(ctx, "ProductCounterNO")
 	startKey := "Product1"
@@ -626,9 +626,9 @@ func (s *SmartContract) GetAllProducts(ctx contractapi.TransactionContextInterfa
 }
 
 // get the history transaction of product
-func (s *SmartContract) GetHistory(ctx contractapi.TransactionContextInterface, productId string) ([]ProductHistory, error) {
+func (s *SmartContract) GetHistory(ctx contractapi.TransactionContextInterface, productObj Product) ([]ProductHistory, error) {
 
-	resultsIterator, err := ctx.GetStub().GetHistoryForKey(productId)
+	resultsIterator, err := ctx.GetStub().GetHistoryForKey(productObj.ProductId)
 	if err != nil {
 		return nil, fmt.Errorf(err.Error())
 	}
@@ -651,7 +651,7 @@ func (s *SmartContract) GetHistory(ctx contractapi.TransactionContextInterface, 
 			}
 		} else {
 			product = Product{
-				ProductId: productId,
+				ProductId: productObj.ProductId,
 			}
 		}
 

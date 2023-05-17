@@ -64,7 +64,7 @@ type Product struct {
 	Status      	string        `json:"status"`
 	Description 	string        `json:"description"`
 	CertificateURL 	string 		  `json:"certificate"`
-	CooperativeId 	string 		  `json:"cooperativeId"`
+	CooperationId 	string 		  `json:"cooperationId"`
 }
 
 type ProductHistory struct {
@@ -97,8 +97,8 @@ type Order struct {
 	OrderID 		string      	`json:"orderID"`
 	ProductItemList []ProductItem 	`json:"productItemList"`
 	Signature 		Signature 		`json:"signature"`
-	// DateCreate 		string 			`json:"dateCreate"`
-	// DateFinish      string      	`json:"dateFinish"`
+	// CreateDate 		string 			`json:"createDate"`
+	// FinishDate      string      	`json:"finishDate"`
 	DeliveryStatus 	[]DeliveryStatus `json:"deliveryStatus"`
 	Status          string     	 	`json:"status"`
 	DistributorId  	string 			`json:"distributorId"`

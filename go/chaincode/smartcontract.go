@@ -61,7 +61,7 @@ type Product struct {
 	Status      	string        `json:"status"`
 	Description 	string        `json:"description"`
 	CertificateURL 	string 		  `json:"certificate"`
-	CooperativeId 	string 		  `json:"cooperativeId"`
+	CooperationId 	string 		  `json:"cooperationId"`
 }
 
 type ProductHistory struct {

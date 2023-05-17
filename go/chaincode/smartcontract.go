@@ -86,7 +86,7 @@ type ProductItem struct {
 
 type Order struct {
 	OrderID 		string      `json:"orderID"`
-	ProductItemList []Order 	`json:"productItemList"`
+	ProductItemList []ProductItem 	`json:"productItemList"`
 	Signature 		Signature 	`json:"signature"`
 	DateCreate 		string 		`json:"dateCreate"`
 	DateFinish      string      `json:"dateFinish"`

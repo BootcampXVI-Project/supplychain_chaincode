@@ -27,7 +27,9 @@ type User struct {
 	UserType string `json:"userType"`
 	Role     string `json:"role"`
 	Status   string `json:"status"`
+	Identify string `json:"identify"`
 }
+
 
 type ProductDates struct {
 	Cultivated     string `json:"cultivated"` // supplier
@@ -54,6 +56,7 @@ type ProductActors struct {
 // Retailer: id, sell => sold
 type Product struct {
 	ProductId   	string        `json:"productId"`
+	Image 			[]string	  `json:"image"`
 	ProductName 	string        `json:"productName"`
 	Dates       	ProductDates  `json:"dates"`
 	Actors      	ProductActors `json:"actors"`
@@ -84,15 +87,22 @@ type ProductItem struct {
 	Quantity string  `json:"quantity"`
 }
 
+type DeliveryStatus struct {
+	DistributedId 	string 		`json:"distributedId"`
+	DeliveryDate 	string		`json:"deliveryDate"`
+	Status       	string    	`json:"status"`
+}
+
 type Order struct {
-	OrderID 		string      `json:"orderID"`
+	OrderID 		string      	`json:"orderID"`
 	ProductItemList []ProductItem 	`json:"productItemList"`
-	Signature 		Signature 	`json:"signature"`
-	DateCreate 		string 		`json:"dateCreate"`
-	DateFinish      string      `json:"dateFinish"`
-	Status          string      `json:"status"`
-	DistributorId  	string 		`json:"distributorId"`
-	RetailerId     	string 		`json:"retailerId"`
+	Signature 		Signature 		`json:"signature"`
+	// CreateDate 		string 			`json:"createDate"`
+	// FinishDate      string      	`json:"finishDate"`
+	DeliveryStatus 	[]DeliveryStatus `json:"deliveryStatus"`
+	Status          string     	 	`json:"status"`
+	DistributorId  	string 			`json:"distributorId"`
+	RetailerId     	string 			`json:"retailerId"`
 }
 
 // Init initializes chaincode
@@ -413,7 +423,10 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 	}
 
 	// Updating the product values withe the new values
+	// product.Dates.Distributed[0].DistributedId = user.UserId
 	product.Dates.Distributed = txTimeAsPtr
+	// product.Dates.Distributed[0].Status = "Start delivery"
+
 	product.Status = "DISTRIBUTED"
 	product.Actors.DistributorId = user.UserId
 
@@ -530,12 +543,21 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("returning error in Transaction TimeStamp") 
 	}
 
+	firstdelivery := DeliveryStatus{
+		DistributedId: user.UserId,
+        Status:     "Start delivery",
+        DeliveryDate:  txTimeAsPtr,
+	}
+	var deliveryStatus []DeliveryStatus
+
+	deliveryStatus = append(deliveryStatus, firstdelivery)
+
 	// DATES
 	var order = Order{
 		OrderID:   			"Order" + strconv.Itoa(orderCounter),
 		ProductItemList: 	orderObj.ProductItemList,
 		Signature:       	orderObj.Signature,
-		DateCreate:      	txTimeAsPtr,
+		DeliveryStatus:     deliveryStatus,
 		Status:     		orderObj.Status,
 		DistributorId: 		user.UserId,
 		RetailerId: 		orderObj.RetailerId,
@@ -548,18 +570,8 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 	return ctx.GetStub().PutState(order.OrderID, orderAsBytes)
 }
 
-func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface,user User,orderObj Order ) error {
-	// newOrder := Order{}
-	// for _, o := range orders {
-	// 	newOrder = append(newOrder, struct {
-	// 		Product  Product
-	// 		Quantity string
-	// 	}{
-	// 		Product:  o.Product,
-	// 		Quantity: o.Quantity,
-	// 	})
-	// }
-	// return newOrder
+func (s *SmartContract) updateOrder(ctx contractapi.TransactionContextInterface,user User,orderObj Order ) error {
+
 	if user.UserType != "distributor" {
 		return fmt.Errorf("User must be a distributor")
 	}
@@ -581,8 +593,49 @@ func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface,
 	if order.DistributorId != user.UserId {
 		return fmt.Errorf("Permission denied!")
 	}
+	delivery := DeliveryStatus{
+		DistributedId: user.UserId,
+        Status:     "Delivering "+ user.Address,
+        DeliveryDate:  txTimeAsPtr,
+	}
+	order.DeliveryStatus = append(order.DeliveryStatus, delivery)
+	order.Status = orderObj.Status
+	// order.Signature = orderObj.Signature
 
-	order.DateFinish = txTimeAsPtr
+	updateOrderAsBytes, _ := json.Marshal(order)
+
+	return ctx.GetStub().PutState(order.OrderID, updateOrderAsBytes)
+}
+
+func (s *SmartContract) finishOrder(ctx contractapi.TransactionContextInterface,user User,orderObj Order ) error {
+
+	if user.UserType != "retailer" {
+		return fmt.Errorf("User must be a retailer")
+	}
+
+	//To Get the transaction TimeStamp from the Channel Header
+	txTimeAsPtr, errTx := s.GetTxTimestampChannel(ctx)
+	if errTx != nil {
+		return fmt.Errorf("returning error in Transaction TimeStamp") 
+	}
+
+	orderBytes, _ := ctx.GetStub().GetState(orderObj.OrderID)
+	if orderBytes == nil {
+		return fmt.Errorf("cannot find this order")
+	}
+
+	order := new(Order)
+	_ = json.Unmarshal(orderBytes, order)
+
+	if order.DistributorId != user.UserId {
+		return fmt.Errorf("Permission denied!")
+	}
+	delivery := DeliveryStatus{
+		DistributedId: user.UserId,
+        Status:     "Done delivery to "+ user.Address,
+        DeliveryDate:  txTimeAsPtr,
+	}
+	order.DeliveryStatus = append(order.DeliveryStatus, delivery)
 	order.Status = orderObj.Status
 	order.Signature = orderObj.Signature
 

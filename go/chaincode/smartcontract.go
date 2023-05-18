@@ -633,8 +633,8 @@ func (s *SmartContract) finishOrder(ctx contractapi.TransactionContextInterface,
 	}
 	delivery := DeliveryStatus{
 		distributedId: user.userId,
-    status:     "Done delivery to "+ user.address,
-    deliveryDate:  txTimeAsPtr
+		status:     "Done delivery to "+ user.address,
+		deliveryDate:  txTimeAsPtr,
 	}
 	order.deliveryStatus = append(order.deliveryStatus, delivery)
 	order.status = orderObj.status

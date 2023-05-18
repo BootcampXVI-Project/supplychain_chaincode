@@ -15,37 +15,37 @@ type SmartContract struct {
 }
 
 type CounterNO struct {
-	Counter int `json:"counter"`
+	counter int `json:"counter"`
 }
 
 type User struct {
-	UserId   string `json:"userId"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	UserName string `json:"userName"`
-	Address  string `json:"address"`
-	UserType string `json:"userType"`
-	Role     string `json:"role"`
-	Status   string `json:"status"`
-	Identify string `json:"identify"`
+	userId   string `json:"userId"`
+	email    string `json:"email"`
+	password string `json:"password"`
+	userName string `json:"userName"`
+	address  string `json:"address"`
+	userType string `json:"userType"`
+	role     string `json:"role"`
+	status   string `json:"status"`
+	identify string `json:"identify"`
 }
 
 
 type ProductDates struct {
-	Cultivated     string `json:"cultivated"` // supplier
-	Harvested      string `json:"harvested"`
-	Imported       string `json:"imported"` // manufacturer
-	Manufacturered string `json:"manufacturered"`
-	Exported       string `json:"exported"`
-	Distributed    string `json:"distributed"` // distributor
-	Sold           string `json:"sold"`        // retailer
+	cultivated     string `json:"cultivated"` // supplier
+	harvested      string `json:"harvested"`
+	imported       string `json:"imported"` // manufacturer
+	manufacturered string `json:"manufacturered"`
+	exported       string `json:"exported"`
+	distributed    string `json:"distributed"` // distributor
+	sold           string `json:"sold"`        // retailer
 }
 
 type ProductActors struct {
-	SupplierId     string `json:"supplierId"`
-	ManufacturerId string `json:"manufacturerId"`
-	DistributorId  string `json:"distributorId"`
-	RetailerId     string `json:"retailerId"`
+	supplierId     string `json:"supplierId"`
+	manufacturerId string `json:"manufacturerId"`
+	distributorId  string `json:"distributorId"`
+	retailerId     string `json:"retailerId"`
 }
 
 // Unit: kg, box/boxes, bottle, bottles
@@ -55,54 +55,54 @@ type ProductActors struct {
 // Distributor: id, distribute => distributed/distributing
 // Retailer: id, sell => sold
 type Product struct {
-	ProductId   	string        `json:"productId"`
-	Image 			[]string	  `json:"image"`
-	ProductName 	string        `json:"productName"`
-	Dates       	ProductDates  `json:"dates"`
-	Actors      	ProductActors `json:"actors"`
-	Price       	string        `json:"price"`
-	Status      	string        `json:"status"`
-	Description 	string        `json:"description"`
-	CertificateURL 	string 		  `json:"certificate"`
-	CooperationId 	string 		  `json:"cooperationId"`
+	productId   	string        `json:"productId"`
+	image 			[]string	  `json:"image"`
+	productName 	string        `json:"productName"`
+	dates       	ProductDates  `json:"dates"`
+	actors      	ProductActors `json:"actors"`
+	price       	string        `json:"price"`
+	status      	string        `json:"status"`
+	description 	string        `json:"description"`
+	certificateURL 	string 		  `json:"certificate"`
+	cooperationId 	string 		  `json:"cooperationId"`
 }
 
 type ProductHistory struct {
-	Record    *Product  `json:"record"`
-	TxId      string    `json:"txId"`
-	Timestamp time.Time `json:"timestamp"`
-	IsDelete  bool      `json:"isDelete"`
+	record    *Product  `json:"record"`
+	txId      string    `json:"txId"`
+	timestamp time.Time `json:"timestamp"`
+	isDelete  bool      `json:"isDelete"`
 }
 
 // order
 
 type Signature struct {
-	DistributorSignature  	string 	`json:"distributorSignature"`
-	RetailerSignature 		string  `json:"retailerSignature"`
+	distributorSignature  	string 	`json:"distributorSignature"`
+	retailerSignature 		string  `json:"retailerSignature"`
 }
 
 
 type ProductItem struct {
-	Product  Product `json:"product"`
-	Quantity string  `json:"quantity"`
+	product  Product `json:"product"`
+	quantity string  `json:"quantity"`
 }
 
 type DeliveryStatus struct {
-	DistributedId 	string 		`json:"distributedId"`
-	DeliveryDate 	string		`json:"deliveryDate"`
-	Status       	string    	`json:"status"`
+	distributedId 	string 		`json:"distributedId"`
+	deliveryDate 	string		`json:"deliveryDate"`
+	status       	string    	`json:"status"`
 }
 
 type Order struct {
-	OrderID 		string      	`json:"orderID"`
-	ProductItemList []ProductItem 	`json:"productItemList"`
-	Signature 		Signature 		`json:"signature"`
-	// CreateDate 		string 			`json:"createDate"`
-	// FinishDate      string      	`json:"finishDate"`
-	DeliveryStatus 	[]DeliveryStatus `json:"deliveryStatus"`
-	Status          string     	 	`json:"status"`
-	DistributorId  	string 			`json:"distributorId"`
-	RetailerId     	string 			`json:"retailerId"`
+	orderID 		string      	`json:"orderID"`
+	productItemList []ProductItem 	`json:"productItemList"`
+	signature 		Signature 		`json:"signature"`
+	// DateCreate 		string 			`json:"dateCreate"`
+	// DateFinish      string      	`json:"dateFinish"`
+	deliveryStatus 	[]DeliveryStatus `json:"deliveryStatus"`
+	status          string     	 	`json:"status"`
+	distributorId  	string 			`json:"distributorId"`
+	retailerId     	string 			`json:"retailerId"`
 }
 
 // Init initializes chaincode
@@ -121,7 +121,7 @@ func initCounter(ctx contractapi.TransactionContextInterface) error {
 	// Initializing Product Counter
 	ProductCounterBytes, _ := ctx.GetStub().GetState("ProductCounterNO")
 	if ProductCounterBytes == nil {
-		var ProductCounter = CounterNO{Counter: 0}
+		var ProductCounter = CounterNO{counter: 0}
 		ProductCounterBytes, _ := json.Marshal(ProductCounter)
 		err := ctx.GetStub().PutState("ProductCounterNO", ProductCounterBytes)
 		if err != nil {
@@ -130,7 +130,7 @@ func initCounter(ctx contractapi.TransactionContextInterface) error {
 	}
 	OrderCounterBytes, _ := ctx.GetStub().GetState("OrdertCounterNO")
 	if OrderCounterBytes == nil {
-		var OrderCounter = CounterNO{Counter: 0}
+		var OrderCounter = CounterNO{counter: 0}
 		OrderCounterBytes, _ := json.Marshal(OrderCounter)
 		err := ctx.GetStub().PutState("OrderCounterNO", OrderCounterBytes)
 		if err != nil {
@@ -148,7 +148,7 @@ func getCounter(ctx contractapi.TransactionContextInterface, assetType string) (
 
 	json.Unmarshal(counterAsBytes, &counterAsset)
 	// fmt.Sprintf("Counter Current Value %d of Asset Type %s", counterAsset.Counter, assetType)
-	return counterAsset.Counter, nil
+	return counterAsset.counter, nil
 }
 
 // incrementCounter to the increase value of the counter based on the Asset Type provided as input parameter by 1
@@ -157,7 +157,7 @@ func incrementCounter(ctx contractapi.TransactionContextInterface, assetType str
 	counterAsset := CounterNO{}
 
 	json.Unmarshal(counterAsBytes, &counterAsset)
-	counterAsset.Counter++
+	counterAsset.counter++
 	counterAsBytes, _ = json.Marshal(counterAsset)
 
 	err := ctx.GetStub().PutState(assetType, counterAsBytes)
@@ -165,7 +165,7 @@ func incrementCounter(ctx contractapi.TransactionContextInterface, assetType str
 		return -1, fmt.Errorf("failed to Increment Counter: %s", err.Error())
 	}
 	fmt.Printf("Printf in incrementing counter  %v", counterAsset)
-	return counterAsset.Counter, nil
+	return counterAsset.counter, nil
 }
 
 // GetTxTimestampChannel Function gets the Transaction time when the chain code was executed it remains same on all the peers where chaincode executes
@@ -185,8 +185,8 @@ func (s *SmartContract) GetTxTimestampChannel(ctx contractapi.TransactionContext
 // cultivate product // gieo trồng sảm phẩm
 func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
-	if user.UserType != "supplier" {
-		return fmt.Errorf("User must be a supplier")
+	if user.userType != "supplier" {
+		return fmt.Errorf("user must be a supplier")
 	}
 
 	productCounter, _ := getCounter(ctx, "ProductCounterNO")
@@ -200,36 +200,36 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 
 	// DATES
 	dates := ProductDates{}
-	dates.Cultivated = txTimeAsPtr
+	dates.cultivated = txTimeAsPtr
 	actors := ProductActors{}
-	actors.SupplierId = user.UserId
+	actors.supplierId = user.userId
 	var product = Product{
-		ProductId:   "Product" + strconv.Itoa(productCounter),
-		ProductName: productObj.ProductName,
-		Dates:       dates,
-		Actors:      actors,
-		Price:       productObj.Price,
-		Status:      "CULTIVATING",
-		Description: productObj.Description,
-		CooperationId : productObj.CooperationId,
+		productId:   "Product" + strconv.Itoa(productCounter),
+		productName: productObj.productName,
+		dates:       dates,
+		actors:      actors,
+		price:       productObj.price,
+		status:      "CULTIVATING",
+		description: productObj.description,
+		cooperationId : productObj.cooperationId,
 	}
 
 	productAsBytes, _ := json.Marshal(product)
 
 	incrementCounter(ctx, "ProductCounterNO")
 
-	return ctx.GetStub().PutState(product.ProductId, productAsBytes)
+	return ctx.GetStub().PutState(product.productId, productAsBytes)
 }
 
 // havert product // thu hoạch
 func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
-	if user.UserType != "supplier" {
-		return fmt.Errorf("User must be a supplier")
+	if user.userType != "supplier" {
+		return fmt.Errorf("user must be a supplier")
 	}
 
 	// get product details from the stub ie. Chaincode stub in network using the product id passed
-	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.productId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -244,23 +244,23 @@ func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterfa
 	}
 
 	// Updating the product values withe the new values
-	product.Dates.Harvested = txTimeAsPtr
-	product.Status = "HAVERTED"
+	product.dates.harvested = txTimeAsPtr
+	product.status = "HAVERTED"
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
-	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
+	return ctx.GetStub().PutState(product.productId, updatedProductAsBytes)
 }
 
 // supplier update
 func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
-	if user.UserType != "supplier" {
-		return fmt.Errorf("User must be a supplier")
+	if user.userType != "supplier" {
+		return fmt.Errorf("user must be a supplier")
 	}
 
 	// get product details from the stub ie. Chaincode stub in network using the product id passed
-	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.productId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -269,44 +269,44 @@ func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContext
 	_ = json.Unmarshal(productBytes, product)
 
 	// Updating the product values withe the new values
-	product.ProductName = productObj.ProductName
-	product.Price = productObj.Price
-	product.Description = productObj.Description
+	product.productName = productObj.productName
+	product.price = productObj.price
+	product.description = productObj.description
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
-	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
+	return ctx.GetStub().PutState(product.productId, updatedProductAsBytes)
 }
 func (s *SmartContract) AddCertificate(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
-	if user.UserType != "supplier" {
-		return fmt.Errorf("User must be a supplier")
+	if user.userType != "supplier" {
+		return fmt.Errorf("user must be a supplier")
 	}
 
 	// get product details from the stub ie. Chaincode stub in network using the product id passed
-	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.productId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
 	product := new(Product)
 	_ = json.Unmarshal(productBytes, product)
 
-	product.CertificateURL = productObj.CertificateURL
+	product.certificateURL = productObj.certificateURL
 	
 	updatedProductAsBytes, _ := json.Marshal(product)
 
-	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
+	return ctx.GetStub().PutState(product.productId, updatedProductAsBytes)
 
 }
 // MANUFACTURER
 // import product
 func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
-	if user.UserType != "manufacturer" {
-		return fmt.Errorf("User must be a manufacturer")
+	if user.userType != "manufacturer" {
+		return fmt.Errorf("user must be a manufacturer")
 	}
 
-	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.productId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -321,24 +321,25 @@ func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterfac
 	}
 
 	// Updating the product values withe the new values
-	product.Dates.Imported = txTimeAsPtr
-	product.Price = productObj.Price
-	product.Status = "IMPORTED"
-	product.Actors.ManufacturerId = user.UserId
+	product.image = productObj.image
+	product.dates.imported = txTimeAsPtr
+	product.price = productObj.price
+	product.status = "IMPORTED"
+	product.actors.manufacturerId = user.userId
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
-	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
+	return ctx.GetStub().PutState(product.productId, updatedProductAsBytes)
 }
 
 // manufacture product
 func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
-	if user.UserType != "manufacturer" {
-		return fmt.Errorf("User must be a manufacturer")
+	if user.userType != "manufacturer" {
+		return fmt.Errorf("user must be a manufacturer")
 	}
 
-	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.productId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -352,27 +353,27 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 		return fmt.Errorf("returning error in Transaction TimeStamp")
 	}
 
-	if product.Actors.ManufacturerId != user.UserId {
+	if product.actors.manufacturerId != user.userId {
 		return fmt.Errorf("Permission denied!")
 	}
 
 	// Updating the product values withe the new values
-	product.Dates.Manufacturered = txTimeAsPtr
-	product.Status = "MANUFACTURED"
+	product.dates.manufacturered = txTimeAsPtr
+	product.status = "MANUFACTURED"
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
-	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
+	return ctx.GetStub().PutState(product.productId, updatedProductAsBytes)
 }
 
 // export product
 func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
-	if user.UserType != "manufacturer" {
-		return fmt.Errorf("User must be a manufacturer")
+	if user.userType != "manufacturer" {
+		return fmt.Errorf("user must be a manufacturer")
 	}
 
-	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.productId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -386,29 +387,29 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 		return fmt.Errorf("returning error in Transaction TimeStamp")
 	}
 
-	if product.Actors.ManufacturerId != user.UserId {
+	if product.actors.manufacturerId != user.userId {
 		return fmt.Errorf("Permission denied!")
 	}
 
 	// Updating the product values withe the new values
-	product.Dates.Exported = txTimeAsPtr
-	product.Price = productObj.Price
-	product.Status = "EXPORTED"
+	product.dates.exported = txTimeAsPtr
+	product.price = productObj.price
+	product.status = "EXPORTED"
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
-	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
+	return ctx.GetStub().PutState(product.productId, updatedProductAsBytes)
 }
 
 // DISTRIBUTOR
 // distribute product
 func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
-	if user.UserType != "distributor" {
-		return fmt.Errorf("User must be a distributor")
+	if user.userType != "distributor" {
+		return fmt.Errorf("user must be a distributor")
 	}
 
-	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.productId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -423,28 +424,28 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 	}
 
 	// Updating the product values withe the new values
-	// product.Dates.Distributed[0].DistributedId = user.UserId
-	product.Dates.Distributed = txTimeAsPtr
-	// product.Dates.Distributed[0].Status = "Start delivery"
+	// product.Dates.distributed[0].distributedId = user.userId
+	product.dates.distributed = txTimeAsPtr
+	// product.Dates.distributed[0].Status = "Start delivery"
 
-	product.Status = "DISTRIBUTED"
-	product.Actors.DistributorId = user.UserId
+	product.status = "DISTRIBUTED"
+	product.actors.distributorId = user.userId
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
-	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
+	return ctx.GetStub().PutState(product.productId, updatedProductAsBytes)
 }
 
 // RETAILER
 // sell product
 func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 
-	if user.UserType != "retailer" {
+	if user.userType != "retailer" {
 		return fmt.Errorf("user must be a retailer")
 	}
 
 	// get product details from the stub ie. Chaincode stub in network using the product id passed
-	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
+	productBytes, _ := ctx.GetStub().GetState(productObj.productId)
 	if productBytes == nil {
 		return fmt.Errorf("cannot find this product")
 	}
@@ -459,14 +460,14 @@ func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface,
 	}
 
 	// Updating the product values to be updated after the function
-	product.Dates.Sold = txTimeAsPtr
-	product.Status = "SOLD"
-	product.Price = productObj.Price
-	product.Actors.RetailerId = user.UserId
+	product.dates.sold = txTimeAsPtr
+	product.status = "SOLD"
+	product.price = productObj.price
+	product.actors.retailerId = user.userId
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
-	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
+	return ctx.GetStub().PutState(product.productId, updatedProductAsBytes)
 }
 
 // get a asset
@@ -530,8 +531,8 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 	// 	})
 	// }
 	// return newOrder
-	if user.UserType != "distributor" {
-		return fmt.Errorf("User must be a distributor")
+	if user.userType != "distributor" {
+		return fmt.Errorf("user must be a distributor")
 	}
 
 	orderCounter, _ := getCounter(ctx, "OrderCounterNO")
@@ -544,9 +545,9 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 	}
 
 	firstdelivery := DeliveryStatus{
-		DistributedId: user.UserId,
-        Status:     "Start delivery",
-        DeliveryDate:  txTimeAsPtr,
+		distributedId: user.userId,
+        status:     "Start delivery",
+        deliveryDate:  txTimeAsPtr,
 	}
 	var deliveryStatus []DeliveryStatus
 
@@ -554,26 +555,26 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 
 	// DATES
 	var order = Order{
-		OrderID:   			"Order" + strconv.Itoa(orderCounter),
-		ProductItemList: 	orderObj.ProductItemList,
-		Signature:       	orderObj.Signature,
-		DeliveryStatus:     deliveryStatus,
-		Status:     		orderObj.Status,
-		DistributorId: 		user.UserId,
-		RetailerId: 		orderObj.RetailerId,
+		orderID:   			"Order" + strconv.Itoa(orderCounter),
+		productItemList: 	orderObj.productItemList,
+		signature:       	orderObj.signature,
+		deliveryStatus:     deliveryStatus,
+		status:     		orderObj.status,
+		distributorId: 		user.userId,
+		retailerId: 		orderObj.retailerId,
 	}
 
 	orderAsBytes, _ := json.Marshal(order)
 
 	incrementCounter(ctx, "OrderCounterNO")
 
-	return ctx.GetStub().PutState(order.OrderID, orderAsBytes)
+	return ctx.GetStub().PutState(order.orderID, orderAsBytes)
 }
 
 func (s *SmartContract) updateOrder(ctx contractapi.TransactionContextInterface,user User,orderObj Order ) error {
 
-	if user.UserType != "distributor" {
-		return fmt.Errorf("User must be a distributor")
+	if user.userType != "distributor" {
+		return fmt.Errorf("user must be a distributor")
 	}
 
 	//To Get the transaction TimeStamp from the Channel Header
@@ -582,7 +583,7 @@ func (s *SmartContract) updateOrder(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("returning error in Transaction TimeStamp") 
 	}
 
-	orderBytes, _ := ctx.GetStub().GetState(orderObj.OrderID)
+	orderBytes, _ := ctx.GetStub().GetState(orderObj.orderID)
 	if orderBytes == nil {
 		return fmt.Errorf("cannot find this order")
 	}
@@ -590,27 +591,27 @@ func (s *SmartContract) updateOrder(ctx contractapi.TransactionContextInterface,
 	order := new(Order)
 	_ = json.Unmarshal(orderBytes, order)
 
-	if order.DistributorId != user.UserId {
+	if order.distributorId != user.userId {
 		return fmt.Errorf("Permission denied!")
 	}
 	delivery := DeliveryStatus{
-		DistributedId: user.UserId,
-        Status:     "Delivering "+ user.Address,
-        DeliveryDate:  txTimeAsPtr,
+		distributedId: user.userId,
+        status:     "Delivering "+ user.address,
+        deliveryDate:  txTimeAsPtr,
 	}
-	order.DeliveryStatus = append(order.DeliveryStatus, delivery)
-	order.Status = orderObj.Status
+	order.deliveryStatus = append(order.deliveryStatus, delivery)
+	order.status = orderObj.status
 	// order.Signature = orderObj.Signature
 
 	updateOrderAsBytes, _ := json.Marshal(order)
 
-	return ctx.GetStub().PutState(order.OrderID, updateOrderAsBytes)
+	return ctx.GetStub().PutState(order.orderID, updateOrderAsBytes)
 }
 
 func (s *SmartContract) finishOrder(ctx contractapi.TransactionContextInterface,user User,orderObj Order ) error {
 
-	if user.UserType != "retailer" {
-		return fmt.Errorf("User must be a retailer")
+	if user.userType != "retailer" {
+		return fmt.Errorf("user must be a retailer")
 	}
 
 	//To Get the transaction TimeStamp from the Channel Header
@@ -619,7 +620,7 @@ func (s *SmartContract) finishOrder(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("returning error in Transaction TimeStamp") 
 	}
 
-	orderBytes, _ := ctx.GetStub().GetState(orderObj.OrderID)
+	orderBytes, _ := ctx.GetStub().GetState(orderObj.orderID)
 	if orderBytes == nil {
 		return fmt.Errorf("cannot find this order")
 	}
@@ -627,21 +628,21 @@ func (s *SmartContract) finishOrder(ctx contractapi.TransactionContextInterface,
 	order := new(Order)
 	_ = json.Unmarshal(orderBytes, order)
 
-	if order.DistributorId != user.UserId {
+	if order.distributorId != user.userId {
 		return fmt.Errorf("Permission denied!")
 	}
 	delivery := DeliveryStatus{
-		DistributedId: user.UserId,
-        Status:     "Done delivery to "+ user.Address,
-        DeliveryDate:  txTimeAsPtr,
+		distributedId: user.userId,
+        status:     "Done delivery to "+ user.address,
+        deliveryDate:  txTimeAsPtr,
 	}
-	order.DeliveryStatus = append(order.DeliveryStatus, delivery)
-	order.Status = orderObj.Status
-	order.Signature = orderObj.Signature
+	order.deliveryStatus = append(order.deliveryStatus, delivery)
+	order.status = orderObj.status
+	order.signature = orderObj.signature
 
 	updateOrderAsBytes, _ := json.Marshal(order)
 
-	return ctx.GetStub().PutState(order.OrderID, updateOrderAsBytes)
+	return ctx.GetStub().PutState(order.orderID, updateOrderAsBytes)
 }
 
 
@@ -671,7 +672,7 @@ func (s *SmartContract) GetHistory(ctx contractapi.TransactionContextInterface, 
 			}
 		} else {
 			product = Product{
-				ProductId: productId,
+				productId: productId,
 			}
 		}
 
@@ -681,10 +682,10 @@ func (s *SmartContract) GetHistory(ctx contractapi.TransactionContextInterface, 
 		}
 
 		productHistory := ProductHistory{
-			Record:    &product,
-			TxId:      response.TxId,
-			Timestamp: timestamp,
-			IsDelete:  response.IsDelete,
+			record:    &product,
+			txId:      response.TxId,
+			timestamp: timestamp,
+			isDelete:  response.IsDelete,
 		}
 		histories = append(histories, productHistory)
 	}

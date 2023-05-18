@@ -211,7 +211,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 		Price:       productObj.Price,
 		Status:      "CULTIVATING",
 		Description: productObj.Description,
-		CooperativeId : productObj.CooperativeId,
+		CooperationId : productObj.CooperationId,
 	}
 
 	productAsBytes, _ := json.Marshal(product)

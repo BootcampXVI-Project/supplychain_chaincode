@@ -97,8 +97,8 @@ type Order struct {
 	orderID 		string      	`json:"orderID"`
 	productItemList []ProductItem 	`json:"productItemList"`
 	signature 		Signature 		`json:"signature"`
-	// DateCreate 		string 			`json:"dateCreate"`
-	// DateFinish      string      	`json:"dateFinish"`
+	// createDate 		string 			`json:"createDate"`
+	// finishDate      string      	`json:"finishDate"`
 	deliveryStatus 	[]DeliveryStatus `json:"deliveryStatus"`
 	status          string     	 	`json:"status"`
 	distributorId  	string 			`json:"distributorId"`
@@ -546,8 +546,8 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 
 	firstdelivery := DeliveryStatus{
 		distributedId: user.userId,
-        status:     "Start delivery",
-        deliveryDate:  txTimeAsPtr,
+    status:     "Start delivery",
+    deliveryDate:  txTimeAsPtr,
 	}
 	var deliveryStatus []DeliveryStatus
 
@@ -596,8 +596,8 @@ func (s *SmartContract) updateOrder(ctx contractapi.TransactionContextInterface,
 	}
 	delivery := DeliveryStatus{
 		distributedId: user.userId,
-        status:     "Delivering "+ user.address,
-        deliveryDate:  txTimeAsPtr,
+    status:     "Delivering "+ user.address,
+    deliveryDate:  txTimeAsPtr,
 	}
 	order.deliveryStatus = append(order.deliveryStatus, delivery)
 	order.status = orderObj.status
@@ -633,8 +633,8 @@ func (s *SmartContract) finishOrder(ctx contractapi.TransactionContextInterface,
 	}
 	delivery := DeliveryStatus{
 		distributedId: user.userId,
-        status:     "Done delivery to "+ user.address,
-        deliveryDate:  txTimeAsPtr,
+    status:     "Done delivery to "+ user.address,
+    deliveryDate:  txTimeAsPtr
 	}
 	order.deliveryStatus = append(order.deliveryStatus, delivery)
 	order.status = orderObj.status

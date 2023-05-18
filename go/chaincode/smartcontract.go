@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+
 	"github.com/golang/protobuf/ptypes"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 )
@@ -62,7 +63,7 @@ type Product struct {
 	Price       	string        `json:"price"`
 	Status      	string        `json:"status"`
 	Description 	string        `json:"description"`
-	CertificateURL 	string 		  `json:"certificateUrl"`
+	CertificateUrl 	string 		  `json:"certificateUrl"`
 	CooperationId 	string 		  `json:"cooperationId"`
 }
 
@@ -208,7 +209,9 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 		Price:       productObj.Price,
 		Status:      "CULTIVATING",
 		Description: productObj.Description,
+		CertificateUrl: productObj.CertificateUrl,
 		CooperationId : productObj.CooperationId,
+		Image: productObj.Image,
 	}
 
 	productAsBytes, _ := json.Marshal(product)
@@ -288,7 +291,7 @@ func (s *SmartContract) AddCertificate(ctx contractapi.TransactionContextInterfa
 	product := new(Product)
 	_ = json.Unmarshal(productBytes, product)
 
-	product.CertificateURL = productObj.CertificateURL
+	product.CertificateUrl = productObj.CertificateUrl
 	
 	updatedProductAsBytes, _ := json.Marshal(product)
 

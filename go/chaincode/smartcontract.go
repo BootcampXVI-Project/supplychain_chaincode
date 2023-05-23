@@ -242,7 +242,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 }
 
 // havert product // thu hoạch
-func (s *SmartContract) HarvertProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
+func (s *SmartContract) HarvestProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 	// fmt.Printf("HarvertProduct")
 
 

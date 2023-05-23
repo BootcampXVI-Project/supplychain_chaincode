@@ -39,6 +39,7 @@ type ProductDates struct {
 	Manufacturered string `json:"manufacturered"`
 	Exported       string `json:"exported"`
 	Distributed    string `json:"distributed"`      // Distributor
+	Selling        string `json:"selling"`
 	Sold           string `json:"sold"`             // Retailer
 }
 
@@ -61,6 +62,7 @@ type Product struct {
 	ProductName 	string        `json:"productName"`
 	Dates       	ProductDates  `json:"dates"`
 	Actors      	ProductActors `json:"actors"`
+	Expired         string        `json:"expireTime"`
 	Price       	string        `json:"price"`
 	Status      	string        `json:"status"`
 	Description 	string        `json:"description"`
@@ -223,6 +225,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 		ProductName: productObj.ProductName,
 		Dates:       dates,
 		Actors:      actors,
+		Expired:     "",
 		Price:       productObj.Price,
 		Status:      "CULTIVATING",
 		Description: productObj.Description,
@@ -388,6 +391,7 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 	product.Image = productObj.Image
 	product.Dates.Manufacturered = txTimeAsPtr
 	product.Status = "MANUFACTURED"
+	product.Expired = productObj.Expired
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
@@ -467,7 +471,42 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 }
 
 // RETAILER
-// sell product
+// import product
+func (s *SmartContract) ImportRetailerProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
+	// fmt.Printf("SellProduct")
+
+
+	if user.UserType != "retailer" {
+		return fmt.Errorf("user must be a retailer")
+	}
+
+	// get product details from the stub ie. Chaincode stub in network using the product id passed
+	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
+	if productBytes == nil {
+		return fmt.Errorf("cannot find this product")
+	}
+
+	product := new(Product)
+	_ = json.Unmarshal(productBytes, product)
+
+	//To Get the transaction TimeStamp from the Channel Header
+	txTimeAsPtr, errTx := s.GetTxTimestampChannel(ctx)
+	if errTx != nil {
+		return fmt.Errorf("returning error in Transaction TimeStamp")
+	}
+
+	// Updating the product values to be updated after the function
+	product.Dates.Sold = txTimeAsPtr
+	product.Status = "SELLING"
+	product.Price = productObj.Price
+	product.Actors.RetailerId = user.UserId
+
+	updatedProductAsBytes, _ := json.Marshal(product)
+
+	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
+}
+
+//Sell product
 func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 	// fmt.Printf("SellProduct")
 

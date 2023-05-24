@@ -592,6 +592,56 @@ func (s *SmartContract) GetAllProducts(ctx contractapi.TransactionContextInterfa
 	return products, nil
 }
 
+func (s *SmartContract) GetOrder(ctx contractapi.TransactionContextInterface, OrderId string) (*Order, error) {
+	orderAsBytes, err := ctx.GetStub().GetState(OrderId)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to read from world state. %s", err.Error())
+	}
+
+	if orderAsBytes == nil {
+		return nil, fmt.Errorf("%s does not exist", OrderId)
+	}
+
+	order := new(Order)
+	_ = json.Unmarshal(orderAsBytes, order)
+
+	return order, nil
+}
+
+func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface, orderObj Order) ([]*Order, error) {
+	// fmt.Printf("GetAll")
+
+
+	assetCounter, _ := getCounter(ctx, "ProductCounterNO")
+	startKey := "Order1"
+	endKey := "Order" + strconv.Itoa(assetCounter+1)
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer resultsIterator.Close()
+
+	var orders []*Order
+
+	for resultsIterator.HasNext() {
+		response, err := resultsIterator.Next()
+
+		if err != nil {
+			return nil, err
+		}
+
+		var order Order
+		_ = json.Unmarshal(response.Value, &product)
+
+		orders = append(orders, &order)
+	}
+
+	return orders, nil
+}
+
 func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,user User,orderObj Order ) error {
 	// fmt.Printf("CreatOrder")
 

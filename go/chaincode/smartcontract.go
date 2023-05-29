@@ -23,12 +23,13 @@ type User struct {
 	PhoneNumber string `json:"phoneNumber"`
 	Email       string `json:"email"`
 	Password    string `json:"password"`
+	FullName    string `json:"fullName"`
 	UserName    string `json:"userName"`
 	Address     string `json:"address"`
 	UserType    string `json:"userType"`
 	Role        string `json:"role"`
 	Status      string `json:"status"`
-	Identify    string `json:"identify"`
+	Signature   string `json:"signature"`
 }
 
 type ProductDates struct {
@@ -61,6 +62,7 @@ type Product struct {
 	Description    string        `json:"description"`
 	CertificateUrl string        `json:"certificateUrl"`
 	CooperationId  string        `json:"cooperationId"`
+	QRCode		   string		 `json:"qrCode"`
 }
 
 type ProductHistory struct {
@@ -200,6 +202,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 	var product = Product{
 		ProductId:      "Product" + strconv.Itoa(productCounter),
 		ProductName:    productObj.ProductName,
+		Image:          productObj.Image,
 		Dates:          dates,
 		Actors:         actors,
 		Expired:        "",
@@ -208,7 +211,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 		Description:    productObj.Description,
 		CertificateUrl: productObj.CertificateUrl,
 		CooperationId:  productObj.CooperationId,
-		Image:          productObj.Image,
+		QRCode:  		productObj.QRCode,
 	}
 	productAsBytes, _ := json.Marshal(product)
 	incrementCounter(ctx, "ProductCounterNO")

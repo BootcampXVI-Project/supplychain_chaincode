@@ -101,14 +101,16 @@ type DeliveryStatus struct {
 	DistributedId 	string 		`json:"distributedId"`
 	DeliveryDate 	string		`json:"deliveryDate"`
 	Status       	string    	`json:"status"`
+	Longitude		string    	`json:"longitude"`
+	Latitude		string    	`json:"latitude"`
 }
 
 type Order struct {
 	OrderID 		string      	`json:"orderID"`
 	ProductItemList []ProductItem 	`json:"productItemList" metadata:",optional"`
 	Signature 		Signature 		`json:"signature"`
-	// createDate 		string 			`json:"createDate"`
-	// finishDate      string      	`json:"finishDate"`
+	// CreateDate 	string 			`json:"createDate"`
+	// FinishDate   string      	`json:"finishDate"`
 	DeliveryStatus 	[]DeliveryStatus `json:"deliveryStatus" metadata:",optional"`
 	Status          string     	 	`json:"status"`
 	DistributorId  	string 			`json:"distributorId"`
@@ -592,7 +594,7 @@ func (s *SmartContract) GetAllProducts(ctx contractapi.TransactionContextInterfa
 	return products, nil
 }
 
-func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,user User,orderObj Order ) error {
+func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order) error {
 	// fmt.Printf("CreatOrder")
 
 	// newOrder := Order{}
@@ -623,6 +625,8 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 		DistributedId: user.UserId,
 		Status:     "Start delivery",
 		DeliveryDate:  txTimeAsPtr,
+		Longitude: orderObj.DeliveryStatus[0].Longitude,
+		Latitude: orderObj.DeliveryStatus[0].Latitude,
 	}
 	var deliveryStatus []DeliveryStatus
 

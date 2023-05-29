@@ -106,7 +106,7 @@ type DeliveryStatus struct {
 }
 
 type Order struct {
-	OrderID 		string      	`json:"orderID"`
+	OrderId 		string      	`json:"orderId"`
 	ProductItemList []ProductItem 	`json:"productItemList" metadata:",optional"`
 	Signature 		Signature 		`json:"signature"`
 	// CreateDate 	string 			`json:"createDate"`
@@ -634,7 +634,7 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 
 	// DATES
 	var order = Order{
-		OrderID:   			"Order" + strconv.Itoa(orderCounter),
+		OrderId:   			"Order" + strconv.Itoa(orderCounter),
 		ProductItemList: 	orderObj.ProductItemList,
 		Signature:       	orderObj.Signature,
 		DeliveryStatus:     deliveryStatus,
@@ -647,7 +647,7 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 
 	incrementCounter(ctx, "OrderCounterNO")
 
-	return ctx.GetStub().PutState(order.OrderID, orderAsBytes)
+	return ctx.GetStub().PutState(order.OrderId, orderAsBytes)
 }
 
 func (s *SmartContract) updateOrder(ctx contractapi.TransactionContextInterface,user User,orderObj Order ) error {
@@ -663,7 +663,7 @@ func (s *SmartContract) updateOrder(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("returning error in Transaction TimeStamp") 
 	}
 
-	orderBytes, _ := ctx.GetStub().GetState(orderObj.OrderID)
+	orderBytes, _ := ctx.GetStub().GetState(orderObj.OrderId)
 	if orderBytes == nil {
 		return fmt.Errorf("cannot find this order")
 	}
@@ -685,7 +685,7 @@ func (s *SmartContract) updateOrder(ctx contractapi.TransactionContextInterface,
 
 	updateOrderAsBytes, _ := json.Marshal(order)
 
-	return ctx.GetStub().PutState(order.OrderID, updateOrderAsBytes)
+	return ctx.GetStub().PutState(order.OrderId, updateOrderAsBytes)
 }
 
 func (s *SmartContract) finishOrder(ctx contractapi.TransactionContextInterface,user User,orderObj Order ) error {
@@ -702,7 +702,7 @@ func (s *SmartContract) finishOrder(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("returning error in Transaction TimeStamp") 
 	}
 
-	orderBytes, _ := ctx.GetStub().GetState(orderObj.OrderID)
+	orderBytes, _ := ctx.GetStub().GetState(orderObj.OrderId)
 	if orderBytes == nil {
 		return fmt.Errorf("cannot find this order")
 	}
@@ -724,7 +724,7 @@ func (s *SmartContract) finishOrder(ctx contractapi.TransactionContextInterface,
 
 	finishOrderAsBytes, _ := json.Marshal(order)
 
-	return ctx.GetStub().PutState(order.OrderID, finishOrderAsBytes)
+	return ctx.GetStub().PutState(order.OrderId, finishOrderAsBytes)
 }
 
 
@@ -804,7 +804,7 @@ func (s *SmartContract) GetHistoryOrder(ctx contractapi.TransactionContextInterf
 			}
 		} else {
 			order = Order{
-				OrderID: orderId,
+				OrderId: orderId,
 			}
 		}
 

@@ -9,6 +9,7 @@ import (
 
 func main() {
 	supplyChaincode, err := contractapi.NewChaincode(&chaincode.SmartContract{})
+	
 	if err != nil {
 		log.Panicf("Error creating supply chaincode: %v", err)
 	}

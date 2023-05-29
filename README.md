@@ -1,36 +1,76 @@
-## Running the sample
+# Building a supply chain management system for OCOP goods and agricultural products based on Hyperledger Fabric platform
 
-The Fabric test network is used to deploy and run this sample. Follow these steps in order:
+# 1. Install Hyperledger Fabric 2.5.0
 
-1. Create the network and a channel (from the `SupplychainNetwork` folder).
+## Install Hyperledger Fabric
+
 ```bash
-   ./network.sh up createChannel  -ca -s couchdb
+curl -sSL https://bit.ly/2ysbOFE | bash -s
 ```
 
-1. Deploy one of the smart contract implementations (from the `SupplychainNetwork` folder).
+## Grant permission for folder fabric-samples
 
-# To deploy the Go chaincode implementation
 ```bash
-   ./network.sh deployCC -ccn basic -ccp ../supplychain_chaincode/go/ -ccl go
+chown -R <ubuntu-user-name> ./fabric-samples
 ```
 
-## config peer command
+## Change directory to folder fabric-samples
+
+```bash
+cd fabric-samples
+```
+
+# 2. Clone needed source to this project
+
+```bash
+git clone https://github.com/BootcampXVI-Project/SupplychainNetwork.git
+```
+
+```bash
+git clone https://github.com/BootcampXVI-Project/supplychain_chaincode.git
+```
+
+```bash
+git clone https://github.com/BootcampXVI-Project/supply_chain_application.git
+```
+
+```bash
+git clone https://github.com/BootcampXVI-Project/explorer.git
+```
+
+```bash
+git clone https://github.com/BootcampXVI-Project/supply_chain_client.git
+```
+
+# 3. Running the Supplychain Network
+
+## Change directory to folder Supplychain Network
+
+```bash
+cd SupplychainNetwork
+```
+
+## Run network
+
+```bash
+./network.sh up createChannel -ca -s couchdb
+```
+
+## Deploy chaincode (smart contract)
+
+```bash
+./network.sh deployCC -ccn basic -ccp ../supplychain_chaincode/go/ -ccl go
+```
+
+## Export PATH and FABRIC_CFG_PATH
 
 ```bash
 export PATH=${PWD}/../bin:$PATH
 export FABRIC_CFG_PATH=$PWD/../config/
 ```
 
-You can then set up the environment variables for each organization. The `./scripts/envVar.sh` command is designed to be run as follows.
+### Predeclare for authorize
 
-```bash
-source ./scripts/envVar.sh && setGlobals $ORG
-```
-
-## after deploy chain code 
-
-
-### predeclare for authorize
 ```bash
 ORDERER_ADDRESS=localhost:7050
 ORDERER_TLS_CERT="${PWD}/organizations/ordererOrganizations/supplychain.com/orderers/orderer.supplychain.com/msp/tlscacerts/tlsca.supplychain.com-cert.pem"
@@ -50,79 +90,22 @@ RETAILER_PEER_TLS_CERT="${PWD}/organizations/peerOrganizations/retailer.supplych
 CONSUMER_PEER_ADDRESS=localhost:7091
 CONSUMER_PEER_TLS_CERT="${PWD}/organizations/peerOrganizations/consumer.supplychain.com/peers/peer0.consumer.supplychain.com/tls/ca.crt"
 ```
-### defined name channel and database
+
+### Define channel and chaincode name
+
 ```bash
 CHANNEL_NAME=supplychain-channel
 CHAINCODE_NAME=basic
 ```
 
-### defined function want to call
+### Set up the environment variables for each organization
+
 ```bash
-INVOKE_PARAMS='{"function":"InitLedger","Args":[]}'
+source ./scripts/envVar.sh && setGlobals supplier
 ```
 
-### create user
-```bash
-'{"function":"CreateUser","Args":["giahung@gmail.com","giahung","giahung","DaNang","supplier","supplier"]}'
+### Init ledger
 
-'{"function":"CreateUser","Args":["nero@gmail.com","nero","nero","Hue","manufacturer","manufacturer"]}'
-
-'{"function":"CreateUser","Args":["nora@gmail.com","nora","nora","Hue","distributor","distributor"]}'
-
-'{"function":"CreateUser","Args":["eden@gmail.com","eden","eden","Quang Nam","retailer","retailer"]}'
-
-```
-### get all user
-```bash
-'{"Args":["GetAllUsers"]}'
-```
-
-### get all product
-```bash
-'{"Args":["GetAllProducts"]}'
-```
-
-### supplier's functions
-### cultivate product
-```bash
-'{"function":"CultivateProduct","Args":["User1","FirstProduct","109000.00","first product"]}'
-```
-
-### harvert product
-```bash
-'{"function":"HarvertProduct","Args":["User1","Product1"]}'
-```
-
-### manufacturer's functions
-### import product
-```bash
-'{"function":"ImportProduct","Args":["User2","Product1","219000.00"]}'
-```
-
-### manufacture product
-```bash
-'{"function":"ManufactureProduct","Args":["User2","Product1"]}'
-```
-
-### export product
-```bash
-'{"function":"ExportProduct","Args":["User2","Product1","219000.00"]}'
-```
-
-### distributor's functions
-### distribute product
-```bash
-'{"function":"DistributeProduct","Args":["User3","Product1"]}'
-```
-
-### retailer's functions
-### sell product
-```bash
-'{"function":"SellProduct","Args":["User4","Product1","299000.00"]}'
-```
-
-
-### call function
 ```bash
 peer chaincode invoke \
   -o $ORDERER_ADDRESS \
@@ -141,5 +124,81 @@ peer chaincode invoke \
   --tlsRootCertFiles $RETAILER_PEER_TLS_CERT \
   --peerAddresses $CONSUMER_PEER_ADDRESS \
   --tlsRootCertFiles $CONSUMER_PEER_TLS_CERT \
-  -c $INVOKE_PARAMS
+  -c '{"function":"InitLedger","Args":[]}'
+```
+
+### Generate organization config files
+
+```bash
+cd organizations
+```
+
+```bash
+./ccp-generate.sh
+```
+
+# 4. Running the explorer
+
+## Change directory to folder explorer
+
+```bash
+cd ../../explorer
+```
+
+## Copy entire crypto artifact directory (organizations/)
+
+```bash
+cp -r ../SupplychainNetwork/organizations/ .
+```
+
+## start up explore and explorer-db services
+
+```bash
+docker-compose up -d
+```
+
+# 5. Running the supply_chain_application
+
+## Change directory to folder supply_chain_application
+
+```bash
+cd ../supply_chain_application
+```
+
+## Install npm packages
+
+```bash
+npm install
+```
+
+## Start application
+
+```bash
+npm start
+```
+
+# 6. Running the Web Application
+
+## Change directory to folder supply_chain_client
+
+```bash
+cd ../supply_chain_client
+```
+
+## Install npm packages
+
+```bash
+npm install
+```
+
+## Build Angular project
+
+```bash
+ng build
+```
+
+## Start application
+
+```bash
+ng serve
 ```

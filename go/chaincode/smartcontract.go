@@ -26,7 +26,6 @@ type User struct {
 	FullName    string `json:"fullName"`
 	UserName    string `json:"userName"`
 	Address     string `json:"address"`
-	UserType    string `json:"userType"`
 	Role        string `json:"role"`
 	Status      string `json:"status"`
 	Signature   string `json:"signature"`
@@ -39,8 +38,8 @@ type ProductDates struct {
 	Manufacturered string `json:"manufacturered"`
 	Exported       string `json:"exported"`
 	Distributed    string `json:"distributed"` // Distributor
-	Selling        string `json:"selling"`
-	Sold           string `json:"sold"` // Retailer
+	Selling        string `json:"selling"` // Retailer
+	Sold           string `json:"sold"` 
 }
 
 type ProductActors struct {
@@ -100,13 +99,14 @@ type DeliveryStatus struct {
 type Order struct {
 	OrderId 		string      	`json:"orderId"`
 	ProductItemList []ProductItem 	`json:"productItemList" metadata:",optional"`
-	Signature 		Signature 		`json:"signature"`
-	// CreateDate 	string 			`json:"createDate"`
-	// FinishDate   string      	`json:"finishDate"`
 	DeliveryStatus 	[]DeliveryStatus `json:"deliveryStatus" metadata:",optional"`
+	Signature 		Signature 		`json:"signature"`
 	Status          string     	 	`json:"status"`
 	DistributorId  	string 			`json:"distributorId"`
 	RetailerId     	string 			`json:"retailerId"`
+	QRCode		   	string		 	`json:"qrCode"`
+	// CreateDate 	string 			`json:"createDate"`
+	// FinishDate   string      	`json:"finishDate"`
 }
 
 // Init initializes chaincode
@@ -182,7 +182,7 @@ func (s *SmartContract) GetTxTimestampChannel(ctx contractapi.TransactionContext
 
 // SUPPLIER FUNCTION
 func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.UserType != "supplier" {
+	if user.Role != "supplier" {
 		return fmt.Errorf("user must be a supplier")
 	}
 	productCounter, _ := getCounter(ctx, "ProductCounterNO")
@@ -220,7 +220,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 }
 
 func (s *SmartContract) HarvestProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.UserType != "supplier" {
+	if user.Role != "supplier" {
 		return fmt.Errorf("user must be a supplier")
 	}
 
@@ -241,7 +241,7 @@ func (s *SmartContract) HarvestProduct(ctx contractapi.TransactionContextInterfa
 
 	// Updating the product values withe the new values
 	product.Dates.Harvested = txTimeAsPtr
-	product.Status = "HAVERTED"
+	product.Status = "HARVESTED"
 
 	updatedProductAsBytes, _ := json.Marshal(product)
 
@@ -249,7 +249,7 @@ func (s *SmartContract) HarvestProduct(ctx contractapi.TransactionContextInterfa
 }
 
 func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.UserType != "supplier" {
+	if user.Role != "supplier" {
 		return fmt.Errorf("user must be a supplier")
 	}
 
@@ -273,7 +273,7 @@ func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContext
 }
 
 func (s *SmartContract) AddCertificate(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.UserType != "supplier" {
+	if user.Role != "supplier" {
 		return fmt.Errorf("user must be a supplier")
 	}
 
@@ -295,7 +295,7 @@ func (s *SmartContract) AddCertificate(ctx contractapi.TransactionContextInterfa
 
 // MANUFACTURER
 func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.UserType != "manufacturer" {
+	if user.Role != "manufacturer" {
 		return fmt.Errorf("user must be a manufacturer")
 	}
 
@@ -326,7 +326,7 @@ func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterfac
 }
 
 func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.UserType != "manufacturer" {
+	if user.Role != "manufacturer" {
 		return fmt.Errorf("user must be a manufacturer")
 	}
 
@@ -352,6 +352,7 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 	product.Image = productObj.Image
 	product.Dates.Manufacturered = txTimeAsPtr
 	product.Status = "MANUFACTURED"
+	product.QRCode = productObj.QRCode
 	product.Expired = productObj.Expired
 
 	updatedProductAsBytes, _ := json.Marshal(product)
@@ -360,7 +361,7 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 }
 
 func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.UserType != "manufacturer" {
+	if user.Role != "manufacturer" {
 		return fmt.Errorf("user must be a manufacturer")
 	}
 
@@ -394,7 +395,7 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 
 // DISTRIBUTOR
 func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.UserType != "distributor" {
+	if user.Role != "distributor" {
 		return fmt.Errorf("user must be a distributor")
 	}
 
@@ -427,7 +428,7 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 
 // RETAILER
 func (s *SmartContract) ImportRetailerProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.UserType != "retailer" {
+	if user.Role != "retailer" {
 		return fmt.Errorf("user must be a retailer")
 	}
 
@@ -447,7 +448,7 @@ func (s *SmartContract) ImportRetailerProduct(ctx contractapi.TransactionContext
 	}
 
 	// Updating the product values to be updated after the function
-	product.Dates.Sold = txTimeAsPtr
+	product.Dates.Selling = txTimeAsPtr
 	product.Status = "SELLING"
 	product.Price = productObj.Price
 	product.Actors.RetailerId = user.UserId
@@ -458,7 +459,7 @@ func (s *SmartContract) ImportRetailerProduct(ctx contractapi.TransactionContext
 }
 
 func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.UserType != "retailer" {
+	if user.Role != "retailer" {
 		return fmt.Errorf("user must be a retailer")
 	}
 
@@ -589,7 +590,7 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 	// }
 	// return newOrder
 
-	if user.UserType != "distributor" {
+	if user.Role != "distributor" {
 		return fmt.Errorf("user must be a distributor")
 	}
 
@@ -622,6 +623,7 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 		Status:     		orderObj.Status,
 		DistributorId: 		user.UserId,
 		RetailerId: 		orderObj.RetailerId,
+		QRCode:				orderObj.QRCode,
 	}
 
 	orderAsBytes, _ := json.Marshal(order)
@@ -631,7 +633,7 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 }
 
 func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order) error {
-	if user.UserType != "distributor" {
+	if user.Role != "distributor" {
 		return fmt.Errorf("user must be a distributor")
 	}
 
@@ -667,7 +669,7 @@ func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface,
 }
 
 func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order) error {
-	if user.UserType != "retailer" {
+	if user.Role != "retailer" {
 		return fmt.Errorf("user must be a retailer")
 	}
 
@@ -695,7 +697,7 @@ func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface,
 	}
 
 	for _, product := range order.ProductItemList {
-	    product.Product.Status = "selling"
+	    product.Product.Status = "SELLING"
 	}
 	order.DeliveryStatus = append(order.DeliveryStatus, delivery)
 	order.Status = orderObj.Status

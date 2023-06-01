@@ -737,9 +737,6 @@ func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface,
 		Latitude: 		latitude,
 	}
 
-	// for _, product := range order.ProductItemList {
-	//     product.Product.Status = "SELLING"
-	// }
 	order.DeliveryStatus = append(order.DeliveryStatus, delivery)
 	order.Status = "SHIPPED"
 	order.FinishDate = txTimeAsPtr

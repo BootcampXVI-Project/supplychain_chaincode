@@ -26,6 +26,7 @@ type User struct {
 	FullName    string `json:"fullName"`
 	UserName    string `json:"userName"`
 	Address     string `json:"address"`
+	Avatar     	string `json:"avatar"`
 	Role        string `json:"role"`
 	Status      string `json:"status"`
 	Signature   string `json:"signature"`
@@ -57,6 +58,7 @@ type Product struct {
 	Actors         ProductActors `json:"actors"`
 	Expired        string        `json:"expireTime"`
 	Price          string        `json:"price"`
+	Amount         string        `json:"amount"`
 	Status         string        `json:"status"`
 	Description    string        `json:"description"`
 	CertificateUrl string        `json:"certificateUrl"`
@@ -202,6 +204,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 		Actors:         actors,
 		Expired:        "",
 		Price:          productObj.Price,
+		Amount:         productObj.Amount,
 		Status:         "CULTIVATING",
 		Description:    productObj.Description,
 		CertificateUrl: productObj.CertificateUrl,
@@ -236,6 +239,7 @@ func (s *SmartContract) HarvestProduct(ctx contractapi.TransactionContextInterfa
 
 	// Updating the product values withe the new values
 	product.Dates.Harvested = txTimeAsPtr
+	product.Amount = productObj.Amount
 	product.Status = "HARVESTED"
 
 	updatedProductAsBytes, _ := json.Marshal(product)
@@ -410,9 +414,8 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 
 	// Updating the product values withe the new values
 	// product.Dates.distributed[0].distributorId = user.UserId
+	// product.Dates.distributed[0].Status = "NOT-SHIPPED-YET"
 	product.Dates.Distributed = txTimeAsPtr
-	// product.Dates.distributed[0].Status = "Start delivery"
-
 	product.Status = "DISTRIBUTED"
 	product.Actors.DistributorId = user.UserId
 
@@ -737,9 +740,6 @@ func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface,
 		Latitude: 		latitude,
 	}
 
-	// for _, product := range order.ProductItemList {
-	//     product.Product.Status = "SELLING"
-	// }
 	order.DeliveryStatus = append(order.DeliveryStatus, delivery)
 	order.Status = "SHIPPED"
 	order.FinishDate = txTimeAsPtr

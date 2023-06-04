@@ -476,7 +476,7 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 
 	// Updating the product values withe the new values
 	// product.Dates.distributed[0].distributorId = user.UserId
-	// product.Dates.distributed[0].Status = "NOT-SHIPPED-YET"
+	// product.Dates.distributed[0].Status = "PENDING"
 	product.Dates.Distributed = txTimeAsPtr
 	product.Status = "DISTRIBUTED"
 	product.Actors.DistributorId = user.UserId
@@ -699,7 +699,7 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 
 	firstdelivery := DeliveryStatus{
 		DistributorId: orderObj.DistributorId,
-		Status:        "NOT-SHIPPED-YET",
+		Status:        "PENDING",
 		DeliveryDate:  txTimeAsPtr,
 		Longitude: orderObj.DeliveryStatus[0].Longitude,
 		Latitude: orderObj.DeliveryStatus[0].Latitude,
@@ -714,7 +714,7 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 		ProductItemList: 	orderObj.ProductItemList,
 		Signature:       	orderObj.Signature,
 		DeliveryStatus:     deliveryStatus,
-		Status:     		"NOT-SHIPPED-YET",
+		Status:     		"PENDING",
 		DistributorId: 		orderObj.DistributorId,
 		RetailerId: 		orderObj.RetailerId,
 		QRCode:				orderObj.QRCode,

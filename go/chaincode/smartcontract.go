@@ -307,10 +307,9 @@ func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContext
 	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
 }
 
-// distributor
 func (s *SmartContract) UpdateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
-	if user.Role != "manufacturer" && user.Role != "distributor" && user.Role != "retailer" {
-		return fmt.Errorf("user must be a manufacturer, distributor, or retailer")
+	if user.Role != "supplier" && user.Role != "manufacturer" && user.Role != "distributor" && user.Role != "retailer" {
+		return fmt.Errorf("user must be a supplier, manufacturer, distributor, or retailer")
 	}
 
 	// get product

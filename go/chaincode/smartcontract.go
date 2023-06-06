@@ -615,7 +615,7 @@ func (s *SmartContract) GetOrder(ctx contractapi.TransactionContextInterface, Or
 	return order, nil
 }
 
-func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface) ([]*Order, error) {
+func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface, status string) ([]*Order, error) {
 	assetCounter, _ := getCounter(ctx, "OrderCounterNO")
 	startKey := "Order1"
 	endKey := "Order" + strconv.Itoa(assetCounter+1)
@@ -628,6 +628,7 @@ func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface
 	defer resultsIterator.Close()
 	var orders []*Order
 
+
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 
@@ -637,7 +638,10 @@ func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface
 
 		var order Order
 		_ = json.Unmarshal(response.Value, &order)
-		orders = append(orders, &order)
+
+		if status == "" || order.Status == status {
+			orders = append(orders, &order)
+		}
 	}
 
 	if len(orders) == 0 {
@@ -694,7 +698,7 @@ func (s *SmartContract) GetAllOrdersByAddress(ctx contractapi.TransactionContext
 	return orders, nil
 }
 
-func (s *SmartContract) GetAllOrdersOfManufacturer(ctx contractapi.TransactionContextInterface, userId string) ([]*Order, error) {
+func (s *SmartContract) GetAllOrdersOfManufacturer(ctx contractapi.TransactionContextInterface, userId string, status string) ([]*Order, error) {
     assetCounter, _ := getCounter(ctx, "OrderCounterNO")
 	startKey := "Order1"
 	endKey := "Order" + strconv.Itoa(assetCounter+1)
@@ -717,7 +721,7 @@ func (s *SmartContract) GetAllOrdersOfManufacturer(ctx contractapi.TransactionCo
 		var order Order
 		_ = json.Unmarshal(response.Value, &order)
 
-		if order.ManufacturerId == userId {
+		if order.ManufacturerId == userId && status == "" || order.Status == status {
 			orders = append(orders, &order)
 		}
 	}
@@ -729,7 +733,7 @@ func (s *SmartContract) GetAllOrdersOfManufacturer(ctx contractapi.TransactionCo
 	return orders, nil
 }
 
-func (s *SmartContract) GetAllOrdersOfDistributor(ctx contractapi.TransactionContextInterface, userId string) ([]*Order, error) {
+func (s *SmartContract) GetAllOrdersOfDistributor(ctx contractapi.TransactionContextInterface, userId string, status string) ([]*Order, error) {
     assetCounter, _ := getCounter(ctx, "OrderCounterNO")
 	startKey := "Order1"
 	endKey := "Order" + strconv.Itoa(assetCounter+1)
@@ -752,7 +756,7 @@ func (s *SmartContract) GetAllOrdersOfDistributor(ctx contractapi.TransactionCon
 		var order Order
 		_ = json.Unmarshal(response.Value, &order)
 
-		if order.DistributorId == userId {
+		if order.DistributorId == userId && status == "" || order.Status == status {
 			orders = append(orders, &order)
 		}
 	}
@@ -764,7 +768,7 @@ func (s *SmartContract) GetAllOrdersOfDistributor(ctx contractapi.TransactionCon
 	return orders, nil
 }
 
-func (s *SmartContract) GetAllOrdersOfRetailer(ctx contractapi.TransactionContextInterface, userId string) ([]*Order, error) {
+func (s *SmartContract) GetAllOrdersOfRetailer(ctx contractapi.TransactionContextInterface, userId string, status string) ([]*Order, error) {
     assetCounter, _ := getCounter(ctx, "OrderCounterNO")
 	startKey := "Order1"
 	endKey := "Order" + strconv.Itoa(assetCounter+1)
@@ -787,7 +791,7 @@ func (s *SmartContract) GetAllOrdersOfRetailer(ctx contractapi.TransactionContex
 		var order Order
 		_ = json.Unmarshal(response.Value, &order)
 
-		if order.RetailerId == userId {
+		if order.RetailerId == userId && status == "" || order.Status == status {
 			orders = append(orders, &order)
 		}
 	}

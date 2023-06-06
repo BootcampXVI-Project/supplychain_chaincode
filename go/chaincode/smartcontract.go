@@ -105,6 +105,7 @@ type Order struct {
 	DeliveryStatus 	[]DeliveryStatus `json:"deliveryStatus" metadata:",optional"`
 	Signature 		Signature 		`json:"signature"`
 	Status          string     	 	`json:"status"`
+	ManufacturerId  string 			`json:"manufacturerId"`
 	DistributorId  	string 			`json:"distributorId"`
 	RetailerId     	string 			`json:"retailerId"`
 	QRCode		   	string		 	`json:"qrCode"`
@@ -591,6 +592,10 @@ func (s *SmartContract) GetAllProducts(ctx contractapi.TransactionContextInterfa
 		products = append(products, &product)
 	}
 
+	if len(products) == 0 {
+		return []*Product{}, nil
+	}
+
 	return products, nil
 }
 
@@ -610,7 +615,7 @@ func (s *SmartContract) GetOrder(ctx contractapi.TransactionContextInterface, Or
 	return order, nil
 }
 
-func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface) ([]*Order, error) {
+func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface, status string) ([]*Order, error) {
 	assetCounter, _ := getCounter(ctx, "OrderCounterNO")
 	startKey := "Order1"
 	endKey := "Order" + strconv.Itoa(assetCounter+1)
@@ -623,6 +628,7 @@ func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface
 	defer resultsIterator.Close()
 	var orders []*Order
 
+
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 
@@ -632,7 +638,14 @@ func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface
 
 		var order Order
 		_ = json.Unmarshal(response.Value, &order)
-		orders = append(orders, &order)
+
+		if status == "" || order.Status == status {
+			orders = append(orders, &order)
+		}
+	}
+
+	if len(orders) == 0 {
+		return []*Order{}, nil
 	}
 
 	return orders, nil
@@ -678,6 +691,115 @@ func (s *SmartContract) GetAllOrdersByAddress(ctx contractapi.TransactionContext
 		}
 	}
 
+	if len(orders) == 0 {
+		return []*Order{}, nil
+	}
+
+	return orders, nil
+}
+
+func (s *SmartContract) GetAllOrdersOfManufacturer(ctx contractapi.TransactionContextInterface, userId string, status string) ([]*Order, error) {
+    assetCounter, _ := getCounter(ctx, "OrderCounterNO")
+	startKey := "Order1"
+	endKey := "Order" + strconv.Itoa(assetCounter+1)
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer resultsIterator.Close()
+	var orders []*Order
+
+	for resultsIterator.HasNext() {
+		response, err := resultsIterator.Next()
+
+		if err != nil {
+			return nil, err
+		}
+
+		var order Order
+		_ = json.Unmarshal(response.Value, &order)
+
+		if order.ManufacturerId == userId && status == "" || order.Status == status {
+			orders = append(orders, &order)
+		}
+	}
+
+	if len(orders) == 0 {
+		return []*Order{}, nil
+	}
+
+	return orders, nil
+}
+
+func (s *SmartContract) GetAllOrdersOfDistributor(ctx contractapi.TransactionContextInterface, userId string, status string) ([]*Order, error) {
+    assetCounter, _ := getCounter(ctx, "OrderCounterNO")
+	startKey := "Order1"
+	endKey := "Order" + strconv.Itoa(assetCounter+1)
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer resultsIterator.Close()
+	var orders []*Order
+
+	for resultsIterator.HasNext() {
+		response, err := resultsIterator.Next()
+
+		if err != nil {
+			return nil, err
+		}
+
+		var order Order
+		_ = json.Unmarshal(response.Value, &order)
+
+		if order.DistributorId == userId && status == "" || order.Status == status {
+			orders = append(orders, &order)
+		}
+	}
+
+	if len(orders) == 0 {
+		return []*Order{}, nil
+	}
+
+	return orders, nil
+}
+
+func (s *SmartContract) GetAllOrdersOfRetailer(ctx contractapi.TransactionContextInterface, userId string, status string) ([]*Order, error) {
+    assetCounter, _ := getCounter(ctx, "OrderCounterNO")
+	startKey := "Order1"
+	endKey := "Order" + strconv.Itoa(assetCounter+1)
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer resultsIterator.Close()
+	var orders []*Order
+
+	for resultsIterator.HasNext() {
+		response, err := resultsIterator.Next()
+
+		if err != nil {
+			return nil, err
+		}
+
+		var order Order
+		_ = json.Unmarshal(response.Value, &order)
+
+		if order.RetailerId == userId && status == "" || order.Status == status {
+			orders = append(orders, &order)
+		}
+	}
+
+	if len(orders) == 0 {
+		return []*Order{}, nil
+	}
+
 	return orders, nil
 }
 
@@ -714,6 +836,7 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 		Signature:       	orderObj.Signature,
 		DeliveryStatus:     deliveryStatus,
 		Status:     		"PENDING",
+		ManufacturerId:		user.UserId,
 		DistributorId: 		orderObj.DistributorId,
 		RetailerId: 		orderObj.RetailerId,
 		QRCode:				orderObj.QRCode,
@@ -856,6 +979,10 @@ func (s *SmartContract) GetProductTransactionHistory(ctx contractapi.Transaction
 		histories = append(histories, productHistory)
 	}
 
+	if len(histories) == 0 {
+		return []ProductHistory{}, nil
+	}
+
 	return histories, nil
 }
 
@@ -899,6 +1026,10 @@ func (s *SmartContract) GetOrderTransactionHistory(ctx contractapi.TransactionCo
 			IsDelete:  response.IsDelete,
 		}
 		histories = append(histories, orderHistory)
+	}
+
+	if len(histories) == 0 {
+		return []OrderHistory{}, nil
 	}
 
 	return histories, nil

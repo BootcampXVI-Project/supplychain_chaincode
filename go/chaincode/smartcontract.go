@@ -803,10 +803,10 @@ func (s *SmartContract) GetAllOrdersOfRetailer(ctx contractapi.TransactionContex
 	return orders, nil
 }
 
-// manufacturer
+// retailer
 func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order) error {
-	if user.Role != "manufacturer" {
-		return fmt.Errorf("user must be a manufacturer")
+	if user.Role != "retailer" {
+		return fmt.Errorf("user must be a retailer")
 	}
 
 	orderCounter, _ := getCounter(ctx, "OrderCounterNO")

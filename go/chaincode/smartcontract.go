@@ -123,18 +123,18 @@ type DeliveryStatus struct {
 }
 
 type Order struct {
-	OrderId 		string      	`json:"orderId"`
-	ProductItemList []ProductItem 	`json:"productItemList" metadata:",optional"`
+	OrderId 		string      	 `json:"orderId"`
+	ProductItemList []ProductItem 	 `json:"productItemList" metadata:",optional"`
 	DeliveryStatuses[]DeliveryStatus `json:"deliveryStatuses" metadata:",optional"`
-	Signatures 		[]string 		`json:"signatures"`
-	Status          string     	 	`json:"status"`
-	CreateDate 		string 			`json:"createDate"`
-	UpdateDate 		string 			`json:"updateDate"`
-	FinishDate   	string      	`json:"finishDate"`
-	QRCode		   	string		 	`json:"qrCode"`
-	Retailer     	Actor 			`json:"retailer"`
-	Manufacturer  	Actor 			`json:"manufacturer"`
-	Distributor  	Actor 			`json:"distributor"`
+	Signatures 		[]string 		 `json:"signatures"`
+	Status          string     	 	 `json:"status"`
+	CreateDate 		string 			 `json:"createDate"`
+	UpdateDate 		string 			 `json:"updateDate"`
+	FinishDate   	string      	 `json:"finishDate"`
+	QRCode		   	string		 	 `json:"qrCode"`
+	Retailer     	Actor 			 `json:"retailer"`
+	Manufacturer  	Actor 			 `json:"manufacturer"`
+	Distributor  	Actor 			 `json:"distributor"`
 }
 
 func parseUserToActor(user User) Actor {
@@ -324,7 +324,6 @@ func (s *SmartContract) HarvestProduct(ctx contractapi.TransactionContextInterfa
 	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
 }
 
-// Need refactor
 // supplier
 func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 	if user.Role != "supplier" {
@@ -393,7 +392,6 @@ func (s *SmartContract) AddCertificate(ctx contractapi.TransactionContextInterfa
 	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
 }
 
-// Need refactor
 // manufacturer
 func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 	if user.Role != "manufacturer" {
@@ -432,7 +430,6 @@ func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterfac
 	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
 }
 
-// Need refactor
 func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 	if user.Role != "manufacturer" {
 		return fmt.Errorf("user must be a manufacturer")
@@ -475,7 +472,6 @@ func (s *SmartContract) ManufactureProduct(ctx contractapi.TransactionContextInt
 	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
 }
 
-// Need refactor
 func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 	if user.Role != "manufacturer" {
 		return fmt.Errorf("user must be a manufacturer")
@@ -516,7 +512,6 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
 }
 
-// Need refactor
 // distributor
 func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 	if user.Role != "distributor" {
@@ -553,7 +548,6 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
 }
 
-// Need refactor
 // retailer
 func (s *SmartContract) ImportRetailerProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 	if user.Role != "retailer" {
@@ -592,7 +586,6 @@ func (s *SmartContract) ImportRetailerProduct(ctx contractapi.TransactionContext
 	return ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
 }
 
-// Need refactor
 func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) error {
 	if user.Role != "retailer" {
 		return fmt.Errorf("user must be a retailer")
@@ -898,16 +891,15 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 
 	actor := parseUserToActor(user)
 
-	firstdelivery := DeliveryStatus{
+	delivery := DeliveryStatus{
 		Status:        	"PENDING",
 		DeliveryDate:  	txTimeAsPtr,
 		Address: 		orderObj.DeliveryStatuses[0].Address,
 		Actor: 			actor,
 	}
 	var deliveryStatuses []DeliveryStatus
-	deliveryStatuses = append(deliveryStatuses, firstdelivery)
+	deliveryStatuses = append(deliveryStatuses, delivery)
 
-	// DATES
 	var order = Order{
 		OrderId:   			"Order" + strconv.Itoa(orderCounter),
 		ProductItemList: 	orderObj.ProductItemList,

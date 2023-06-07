@@ -219,6 +219,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 	if user.Role != "supplier" {
 		return fmt.Errorf("user must be a supplier")
 	}
+
 	productCounter, _ := getCounter(ctx, "ProductCounterNO")
 	productCounter++
 

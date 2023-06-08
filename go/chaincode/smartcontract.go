@@ -110,6 +110,11 @@ type ProductItem struct {
 	Quantity string  `json:"quantity"`
 }
 
+type ProductIdItem struct {
+	ProductId  	string 	`json:"productId"`
+	Quantity 	string  `json:"quantity"`
+}
+
 type ProductItemPayload struct {
 	ProductId  	string 	`json:"productId"`
 	Quantity 	string  `json:"quantity"`
@@ -120,6 +125,10 @@ type DeliveryStatus struct {
 	DeliveryDate 	string		`json:"deliveryDate"`
 	Address			string    	`json:"address"`
 	Actor 			Actor 		`json:"actor"`
+}
+
+type DeliveryStatusCreateOrder struct {
+	Address			string    	`json:"address"`
 }
 
 type Order struct {
@@ -135,6 +144,13 @@ type Order struct {
 	Retailer     	Actor 			 `json:"retailer"`
 	Manufacturer  	Actor 			 `json:"manufacturer"`
 	Distributor  	Actor 			 `json:"distributor"`
+}
+
+type OrderPayload struct {
+	ProductIdItems 	[]ProductIdItem 			`json:"productIdItems" metadata:",optional"`
+	DeliveryStatus 	DeliveryStatusCreateOrder 	`json:"deliveryStatus"`
+	Signatures 		[]string 					`json:"signatures"`
+	QRCode		   	string		 				`json:"qrCode"`
 }
 
 func parseUserToActor(user User) Actor {
@@ -180,6 +196,13 @@ func initCounter(ctx contractapi.TransactionContextInterface) error {
 	}
 
 	return nil
+}
+
+func (s *SmartContract) GetCounterOfType(ctx contractapi.TransactionContextInterface, assetType string) (int, error) {
+	counterAsBytes, _ := ctx.GetStub().GetState(assetType)
+	counterAsset := CounterNO{}
+	json.Unmarshal(counterAsBytes, &counterAsset)
+	return counterAsset.Counter, nil
 }
 
 func getCounter(ctx contractapi.TransactionContextInterface, assetType string) (int, error) {
@@ -876,7 +899,7 @@ func (s *SmartContract) GetAllOrdersOfRetailer(ctx contractapi.TransactionContex
 }
 
 // retailer
-func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order) error {
+func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj OrderPayload) error {
 	if user.Role != "retailer" {
 		return fmt.Errorf("user must be a retailer")
 	}
@@ -894,15 +917,33 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 	delivery := DeliveryStatus{
 		Status:        	"PENDING",
 		DeliveryDate:  	txTimeAsPtr,
-		Address: 		orderObj.DeliveryStatuses[0].Address,
+		Address: 		orderObj.DeliveryStatus.Address,
 		Actor: 			actor,
 	}
 	var deliveryStatuses []DeliveryStatus
 	deliveryStatuses = append(deliveryStatuses, delivery)
 
+	var productItemList []ProductItem
+	for _, item := range orderObj.ProductIdItems {
+		productAsBytes, err := ctx.GetStub().GetState(item.ProductId)
+		if err != nil {
+			return fmt.Errorf("product not found")
+		}
+
+		product := new(Product)
+		_ = json.Unmarshal(productAsBytes, product)
+
+		productItem := ProductItem{ 
+			Product: *product, 
+			Quantity: item.Quantity, 
+		}
+
+		productItemList = append(productItemList, productItem)
+	}
+
 	var order = Order{
 		OrderId:   			"Order" + strconv.Itoa(orderCounter),
-		ProductItemList: 	orderObj.ProductItemList,
+		ProductItemList: 	productItemList,
 		Signatures:       	orderObj.Signatures,
 		DeliveryStatuses:   deliveryStatuses,
 		Status:     		"PENDING",

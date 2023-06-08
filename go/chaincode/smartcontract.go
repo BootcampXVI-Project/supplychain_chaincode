@@ -724,6 +724,21 @@ func (s *SmartContract) GetOrder(ctx contractapi.TransactionContextInterface, Or
 
 	return order, nil
 }
+func getOrder(ctx contractapi.TransactionContextInterface, OrderId string) (*Order, error) {
+	orderAsBytes, err := ctx.GetStub().GetState(OrderId)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to read from world state. %s", err.Error())
+	}
+	if orderAsBytes == nil {
+		return nil, fmt.Errorf("%s does not exist", OrderId)
+	}
+
+	order := new(Order)
+	_ = json.Unmarshal(orderAsBytes, order)
+
+	return order, nil
+}
 
 func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface, status string) ([]*Order, error) {
 	assetCounter, _ := getCounter(ctx, "OrderCounterNO")
@@ -974,47 +989,45 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 	orderAsBytes, _ := json.Marshal(order)
 	incrementCounter(ctx, "OrderCounterNO")
 
-	// return ctx.GetStub().PutState(order.OrderId, orderAsBytes)
-	err := ctx.GetStub().PutState(order.OrderId, orderAsBytes)
-	if err != nil {
-		return fmt.Errorf("failed to put order state on the ledger: %s", err.Error())
-	}
+	return ctx.GetStub().PutState(order.OrderId, orderAsBytes)
+	// err := ctx.GetStub().PutState(order.OrderId, orderAsBytes)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to put order state on the ledger: %s", err.Error())
+	// }
 
-	// Wait for the order state to be synchronized on all peers
-	err = ctx.GetStub().SetEvent("waitForSync", []byte(order.OrderId))
-	if err != nil {
-		return fmt.Errorf("failed to set synchronization event: %s", err.Error())
-	}
+	// // Wait for the order state to be synchronized on all peers
+	// err = ctx.GetStub().SetEvent("waitForSync", []byte(order.OrderId))
+	// if err != nil {
+	// 	return fmt.Errorf("failed to set synchronization event: %s", err.Error())
+	// }
 
-	return nil
+	// return nil
 }
 
 // manufacturer
-func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface, user User, orderId string) error {
+func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface, user User, OrderId string) error {
 	if user.Role != "manufacturer" {
 		return fmt.Errorf("user must be a manufacturer")
 	}
 
+	// orderAsBytes, err := ctx.GetStub().GetState(OrderId)
+
+	// if err != nil {
+	// 	return fmt.Errorf("failed to read from world state. %s", err.Error())
+	// }
+	// if orderAsBytes == nil {
+	// 	return fmt.Errorf("%s does not exist", OrderId)
+	// }
+
+	// order := new(Order)
+	// _ = json.Unmarshal(orderAsBytes, order)
+	order, _ := getOrder(ctx, OrderId)
+
+	
 	txTimeAsPtr, errTx := s.GetTxTimestampChannel(ctx)
 	if errTx != nil {
 		return fmt.Errorf("transaction timeStamp error")
 	}
-
-	orderBytes, err := ctx.GetStub().GetState(orderId)
-	if err != nil {
-		return fmt.Errorf("failed to read from world state. %s", err.Error())
-	}
-	if orderBytes == nil {
-		return fmt.Errorf("%s does not exist", orderId)
-	}
-
-	// orderBytes, _ := ctx.GetStub().GetState(orderId)
-	// if orderBytes == nil {
-	// 	return fmt.Errorf("cannot find this order")
-	// }
-
-	order := new(Order)
-	_ = json.Unmarshal(orderBytes, order)
 
 	// export products in order
 	for _, item := range order.ProductItemList {
@@ -1058,7 +1071,7 @@ func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface
 }
 
 // distributor
-func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order, longitude string, latitude string) error {
+func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order) error {
 	if user.Role != "distributor" {
 		return fmt.Errorf("user must be a distributor")
 	}
@@ -1103,7 +1116,7 @@ func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface,
 }
 
 // distributor
-func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order, longitude string, latitude string) error {
+func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order) error {
 	if user.Role != "distributor" {
 		return fmt.Errorf("user must be a distributor")
 	}

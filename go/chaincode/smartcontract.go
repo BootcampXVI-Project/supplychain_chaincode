@@ -258,7 +258,22 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 		Time: txTimeAsPtr,
 		Actor: actor,
 	}
-	dates := append(datesArray, date)
+	date1 := ProductDate{
+		Status: "HARVESTED",
+		Time: txTimeAsPtr,
+		Actor: actor,
+	}
+	date2 := ProductDate{
+		Status: "IMPORTED",
+		Time: txTimeAsPtr,
+		Actor: actor,
+	}
+	date3 := ProductDate{
+		Status: "MANUFACTURED",
+		Time: txTimeAsPtr,
+		Actor: actor,
+	}
+	dates := append(datesArray, date, date1, date2, date3)
 	
 	var product = Product{
 		ProductId:      "Product" + strconv.Itoa(productCounter),
@@ -959,7 +974,87 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 	orderAsBytes, _ := json.Marshal(order)
 	incrementCounter(ctx, "OrderCounterNO")
 
-	return ctx.GetStub().PutState(order.OrderId, orderAsBytes)
+	// return ctx.GetStub().PutState(order.OrderId, orderAsBytes)
+	err := ctx.GetStub().PutState(order.OrderId, orderAsBytes)
+	if err != nil {
+		return fmt.Errorf("failed to put order state on the ledger: %s", err.Error())
+	}
+
+	// Wait for the order state to be synchronized on all peers
+	err = ctx.GetStub().SetEvent("waitForSync", []byte(order.OrderId))
+	if err != nil {
+		return fmt.Errorf("failed to set synchronization event: %s", err.Error())
+	}
+
+	return nil
+}
+
+// manufacturer
+func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface, user User, orderId string) error {
+	if user.Role != "manufacturer" {
+		return fmt.Errorf("user must be a manufacturer")
+	}
+
+	txTimeAsPtr, errTx := s.GetTxTimestampChannel(ctx)
+	if errTx != nil {
+		return fmt.Errorf("transaction timeStamp error")
+	}
+
+	orderBytes, err := ctx.GetStub().GetState(orderId)
+	if err != nil {
+		return fmt.Errorf("failed to read from world state. %s", err.Error())
+	}
+	if orderBytes == nil {
+		return fmt.Errorf("%s does not exist", orderId)
+	}
+
+	// orderBytes, _ := ctx.GetStub().GetState(orderId)
+	// if orderBytes == nil {
+	// 	return fmt.Errorf("cannot find this order")
+	// }
+
+	order := new(Order)
+	_ = json.Unmarshal(orderBytes, order)
+
+	// export products in order
+	for _, item := range order.ProductItemList {
+		actor := parseUserToActor(user)
+		date := ProductDate{
+			Status: "EXPORTED",
+			Time: txTimeAsPtr,
+			Actor: actor,
+		}
+		dates := append(item.Product.Dates, date)
+
+		// update product & update updated products into order
+		item.Product.Dates = dates
+		item.Product.Price = item.Product.Price
+		item.Product.Status = "EXPORTED"
+
+		updatedProductAsBytes, _ := json.Marshal(item.Product)
+		ctx.GetStub().PutState(item.Product.ProductId, updatedProductAsBytes)
+	}
+
+	// if order.Distributor.UserId != user.UserId {
+	// 	return fmt.Errorf("Permission denied!")
+	// }
+
+	actor := parseUserToActor(user)
+	delivery := DeliveryStatus{
+		Status:        	"APPROVED",
+		DeliveryDate:  	txTimeAsPtr,
+		Address: 		"",
+		Actor: 			actor,
+	}
+	deliveryStatuses := append(order.DeliveryStatuses, delivery)
+
+	order.DeliveryStatuses = deliveryStatuses
+	order.UpdateDate = txTimeAsPtr
+	order.Status = "APPROVED"
+
+	updateOrderAsBytes, _ := json.Marshal(order)
+
+	return ctx.GetStub().PutState(order.OrderId, updateOrderAsBytes)
 }
 
 // distributor

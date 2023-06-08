@@ -990,46 +990,32 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 	incrementCounter(ctx, "OrderCounterNO")
 
 	return ctx.GetStub().PutState(order.OrderId, orderAsBytes)
-	// err := ctx.GetStub().PutState(order.OrderId, orderAsBytes)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to put order state on the ledger: %s", err.Error())
-	// }
-
-	// // Wait for the order state to be synchronized on all peers
-	// err = ctx.GetStub().SetEvent("waitForSync", []byte(order.OrderId))
-	// if err != nil {
-	// 	return fmt.Errorf("failed to set synchronization event: %s", err.Error())
-	// }
-
-	// return nil
 }
 
 // manufacturer
-func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface, user User, OrderId string) error {
+func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface, user User, orderId string) error {
 	if user.Role != "manufacturer" {
 		return fmt.Errorf("user must be a manufacturer")
 	}
 
-	// orderAsBytes, err := ctx.GetStub().GetState(OrderId)
+	orderAsBytes, err := ctx.GetStub().GetState(orderId)
+	if err != nil {
+		return fmt.Errorf("failed to read from world state. %s", err.Error())
+	}
+	if orderAsBytes == nil {
+		return fmt.Errorf("%s does not exist", orderId)
+	}
 
-	// if err != nil {
-	// 	return fmt.Errorf("failed to read from world state. %s", err.Error())
-	// }
-	// if orderAsBytes == nil {
-	// 	return fmt.Errorf("%s does not exist", OrderId)
-	// }
+	order := new(Order)
+	_ = json.Unmarshal(orderAsBytes, order)
 
-	// order := new(Order)
-	// _ = json.Unmarshal(orderAsBytes, order)
-	order, _ := getOrder(ctx, OrderId)
-
-	
 	txTimeAsPtr, errTx := s.GetTxTimestampChannel(ctx)
 	if errTx != nil {
 		return fmt.Errorf("transaction timeStamp error")
 	}
 
 	// export products in order
+	var productItemList []ProductItem
 	for _, item := range order.ProductItemList {
 		actor := parseUserToActor(user)
 		date := ProductDate{
@@ -1039,13 +1025,20 @@ func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface
 		}
 		dates := append(item.Product.Dates, date)
 
-		// update product & update updated products into order
+		// update product in chaincode
 		item.Product.Dates = dates
 		item.Product.Price = item.Product.Price
 		item.Product.Status = "EXPORTED"
 
 		updatedProductAsBytes, _ := json.Marshal(item.Product)
 		ctx.GetStub().PutState(item.Product.ProductId, updatedProductAsBytes)
+
+		// update updated products into order
+		productItem := ProductItem{
+			Product: item.Product,
+			Quantity: item.Quantity,
+		}
+		productItemList = append(productItemList, productItem)
 	}
 
 	// if order.Distributor.UserId != user.UserId {
@@ -1061,6 +1054,7 @@ func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface
 	}
 	deliveryStatuses := append(order.DeliveryStatuses, delivery)
 
+	order.ProductItemList = productItemList
 	order.DeliveryStatuses = deliveryStatuses
 	order.UpdateDate = txTimeAsPtr
 	order.Status = "APPROVED"

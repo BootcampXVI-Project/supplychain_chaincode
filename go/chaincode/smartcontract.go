@@ -1083,9 +1083,9 @@ func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface,
 	order := new(Order)
 	_ = json.Unmarshal(orderBytes, order)
 
-	if order.Distributor.UserId != user.UserId {
-		return fmt.Errorf("Permission denied!")
-	}
+	// if order.Distributor.UserId != user.UserId {
+	// 	return fmt.Errorf("Permission denied!")
+	// }
 
 	actor := parseUserToActor(user)
 	delivery := DeliveryStatus{
@@ -1099,10 +1099,6 @@ func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface,
 	order.DeliveryStatuses = deliveryStatuses
 	order.UpdateDate = txTimeAsPtr
 	order.Status = "SHIPPING"
-	// order.Signature = orderObj.Signature
-	// for i := range order.ProductItemList {
-	// 	order.ProductItemList[i].Quantity = orderObj.ProductItemList[i].Quantity
-	// }
 
 	updateOrderAsBytes, _ := json.Marshal(order)
 
@@ -1128,9 +1124,9 @@ func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface,
 	order := new(Order)
 	_ = json.Unmarshal(orderBytes, order)
 
-	if order.Distributor.UserId != user.UserId {
-		return fmt.Errorf("Permission denied!")
-	}
+	// if order.Distributor.UserId != user.UserId {
+	// 	return fmt.Errorf("Permission denied!")
+	// }
 	
 	actor := parseUserToActor(user)
 	delivery := DeliveryStatus{

@@ -147,11 +147,17 @@ type Order struct {
 	Distributor  	Actor 			 `json:"distributor"`
 }
 
-type OrderPayload struct {
+type OrderForCreate struct {
 	ProductIdItems 	[]ProductIdItem 			`json:"productIdItems" metadata:",optional"`
 	DeliveryStatus 	DeliveryStatusCreateOrder 	`json:"deliveryStatus"`
 	Signatures 		[]string 					`json:"signatures"`
 	QRCode		   	string		 				`json:"qrCode"`
+}
+
+type OrderForUpdateFinish struct {
+	OrderId 		string      	 			`json:"orderId"`
+	DeliveryStatus 	DeliveryStatusCreateOrder 	`json:"deliveryStatus"`
+	Signature 		string 						`json:"signature"`
 }
 
 func parseUserToActor(user User) Actor {
@@ -930,7 +936,7 @@ func (s *SmartContract) GetAllOrdersOfRetailer(ctx contractapi.TransactionContex
 }
 
 // retailer
-func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj OrderPayload) (*Order, error) {
+func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj OrderForCreate) (*Order, error) {
 	if user.Role != "retailer" {
 		return nil, fmt.Errorf("user must be a retailer")
 	}
@@ -944,6 +950,7 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 	}
 
 	actor := parseUserToActor(user)
+	emptyActor := Actor{}
 
 	delivery := DeliveryStatus{
 		Status:        	"PENDING",
@@ -978,8 +985,8 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 		Signatures:       	orderObj.Signatures,
 		DeliveryStatuses:   deliveryStatuses,
 		Status:     		"PENDING",
-		Manufacturer:		actor,
-		Distributor: 		actor,
+		Manufacturer:		emptyActor,
+		Distributor: 		emptyActor,
 		Retailer: 			actor,
 		QRCode:				orderObj.QRCode,
 		CreateDate: 		txTimeAsPtr,
@@ -1058,6 +1065,7 @@ func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface
 
 	order.ProductItemList = productItemList
 	order.DeliveryStatuses = deliveryStatuses
+	order.Manufacturer = actor
 	order.UpdateDate = txTimeAsPtr
 	order.Status = "APPROVED"
 
@@ -1068,7 +1076,7 @@ func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface
 }
 
 // distributor
-func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order) (*Order, error) {
+func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj OrderForUpdateFinish) (*Order, error) {
 	if user.Role != "distributor" {
 		return nil, fmt.Errorf("user must be a distributor")
 	}
@@ -1090,16 +1098,45 @@ func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface,
 	// 	return nil, fmt.Errorf("Permission denied!")
 	// }
 
+	// distribute products in order
+	var productItemList []ProductItem
+	for _, item := range order.ProductItemList {
+		actor := parseUserToActor(user)
+		date := ProductDate{
+			Status: "DISTRIBUTED",
+			Time: txTimeAsPtr,
+			Actor: actor,
+		}
+		dates := append(item.Product.Dates, date)
+
+		// update product in chaincode
+		item.Product.Dates = dates
+		item.Product.Status = "DISTRIBUTED"
+
+		updatedProductAsBytes, _ := json.Marshal(item.Product)
+		ctx.GetStub().PutState(item.Product.ProductId, updatedProductAsBytes)
+
+		// update updated products into order
+		productItem := ProductItem{
+			Product: item.Product,
+			Quantity: item.Quantity,
+		}
+		productItemList = append(productItemList, productItem)
+	}
+
 	actor := parseUserToActor(user)
 	delivery := DeliveryStatus{
 		Status:        	"SHIPPING",
 		DeliveryDate:  	txTimeAsPtr,
-		Address: 		orderObj.DeliveryStatuses[0].Address,
+		Address: 		orderObj.DeliveryStatus.Address,
 		Actor: 			actor,
 	}
 	deliveryStatuses := append(order.DeliveryStatuses, delivery)
 
+	order.Signatures = append(order.Signatures, orderObj.Signature)
+	order.ProductItemList = productItemList
 	order.DeliveryStatuses = deliveryStatuses
+	order.Distributor = actor
 	order.UpdateDate = txTimeAsPtr
 	order.Status = "SHIPPING"
 
@@ -1110,7 +1147,7 @@ func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface,
 }
 
 // distributor
-func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface, user User, orderObj Order) (*Order, error) {
+func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface, user User, orderObj OrderForUpdateFinish) (*Order, error) {
 	if user.Role != "distributor" {
 		return nil, fmt.Errorf("user must be a distributor")
 	}
@@ -1131,20 +1168,47 @@ func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface,
 	// if order.Distributor.UserId != user.UserId {
 	// 	return nil, fmt.Errorf("Permission denied!")
 	// }
+
+	// selling products in order
+	var productItemList []ProductItem
+	for _, item := range order.ProductItemList {
+		actor := parseUserToActor(user)
+		date := ProductDate{
+			Status: "SELLING",
+			Time: txTimeAsPtr,
+			Actor: actor,
+		}
+		dates := append(item.Product.Dates, date)
+
+		// update product in chaincode
+		item.Product.Dates = dates
+		item.Product.Status = "SELLING"
+
+		updatedProductAsBytes, _ := json.Marshal(item.Product)
+		ctx.GetStub().PutState(item.Product.ProductId, updatedProductAsBytes)
+
+		// update updated products into order
+		productItem := ProductItem{
+			Product: item.Product,
+			Quantity: item.Quantity,
+		}
+		productItemList = append(productItemList, productItem)
+	}
 	
 	actor := parseUserToActor(user)
 	delivery := DeliveryStatus{
 		Status:        	"SHIPPED",
 		DeliveryDate:  	txTimeAsPtr,
-		Address: 		orderObj.DeliveryStatuses[0].Address,
+		Address: 		orderObj.DeliveryStatus.Address,
 		Actor: 			actor,
 	}
 	deliveryStatuses := append(order.DeliveryStatuses, delivery)
 
-	order.DeliveryStatuses = deliveryStatuses
-	order.FinishDate = txTimeAsPtr
 	order.Status = "SHIPPED"
-	order.Signatures = orderObj.Signatures
+	order.FinishDate = txTimeAsPtr
+	order.ProductItemList = productItemList
+	order.DeliveryStatuses = deliveryStatuses
+	order.Signatures = append(order.Signatures, orderObj.Signature)
 
 	finishOrderAsBytes, _ := json.Marshal(order)
 	ctx.GetStub().PutState(order.OrderId, finishOrderAsBytes)

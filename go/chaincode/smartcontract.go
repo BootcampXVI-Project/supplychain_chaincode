@@ -700,27 +700,43 @@ func (s *SmartContract) GetProduct(ctx contractapi.TransactionContextInterface, 
 }
 
 func (s *SmartContract) GetAllProducts(ctx contractapi.TransactionContextInterface) ([]*Product, error) {
-	assetCounter, _ := getCounter(ctx, "ProductCounterNO")
-	startKey := "Product1"
-	endKey := "Product" + strconv.Itoa(assetCounter+1)
-	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+	productCounter, _ := getCounter(ctx, "ProductCounterNO")
+	var startKey string = "Product1"
+	var endKey string
 
+	// Limit product amount: > 99 products
+	if productCounter == 99 {
+		endKey = "Product99"
+	} else
+		if productCounter >= 89 && productCounter <= 98 {
+			endKey = "Product" + strconv.Itoa(productCounter+1)
+		} else
+			if productCounter >= 9 {
+				endKey = "Product9"
+			} else {
+				endKey = "Product" + strconv.Itoa(productCounter+1)
+			}
+				
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey+"\x00")
 	if err != nil {
 		return nil, err
 	}
-
 	defer resultsIterator.Close()
+
 	var products []*Product
 
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
-
 		if err != nil {
 			return nil, err
 		}
 
 		var product Product
-		_ = json.Unmarshal(response.Value, &product)
+		err = json.Unmarshal(response.Value, &product)
+		if err != nil {
+			return nil, err
+		}
+
 		products = append(products, &product)
 	}
 

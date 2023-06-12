@@ -1129,7 +1129,7 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 		parsedProduct.ProductCommercialId = "ProductCommercial" + strconv.Itoa(productCommercialCounter)
 		parsedProduct.QRCode = item.QRCode
 		productCommercialAsBytes, _ := json.Marshal(parsedProduct)
-		ctx.GetStub().PutState(parsedProduct.ProductId, productCommercialAsBytes)
+		ctx.GetStub().PutState(parsedProduct.ProductCommercialId, productCommercialAsBytes)
 
 		productItem := ProductCommercialItem{ 
 			Product: parsedProduct, 
@@ -1198,7 +1198,7 @@ func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface
 		item.Product.Status = "EXPORTED"
 
 		updatedProductAsBytes, _ := json.Marshal(item.Product)
-		ctx.GetStub().PutState(item.Product.ProductId, updatedProductAsBytes)
+		ctx.GetStub().PutState(item.Product.ProductCommercialId, updatedProductAsBytes)
 
 		// update updated products into order
 		productItem := ProductCommercialItem{
@@ -1216,7 +1216,7 @@ func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface
 	delivery := DeliveryStatus{
 		Status:        	"APPROVED",
 		DeliveryDate:  	txTimeAsPtr,
-		Address: 		"",
+		Address: 		actor.Address,
 		Actor: 			actor,
 	}
 	deliveryStatuses := append(order.DeliveryStatuses, delivery)
@@ -1271,7 +1271,7 @@ func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface,
 		item.Product.Status = "DISTRIBUTING"
 
 		updatedProductAsBytes, _ := json.Marshal(item.Product)
-		ctx.GetStub().PutState(item.Product.ProductId, updatedProductAsBytes)
+		ctx.GetStub().PutState(item.Product.ProductCommercialId, updatedProductAsBytes)
 
 		// update updated products into order
 		productItem := ProductCommercialItem{
@@ -1341,7 +1341,7 @@ func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface,
 		item.Product.Status = "RETAILING"
 
 		updatedProductAsBytes, _ := json.Marshal(item.Product)
-		ctx.GetStub().PutState(item.Product.ProductId, updatedProductAsBytes)
+		ctx.GetStub().PutState(item.Product.ProductCommercialId, updatedProductAsBytes)
 
 		// update updated products into order
 		productItem := ProductCommercialItem{

@@ -83,17 +83,18 @@ type Product struct {
 }
 
 type ProductCommercial struct {
-	ProductId      string         `json:"productId"`
-	ProductName    string         `json:"productName"`
-	Dates          []ProductDate  `json:"dates" metadata:",optional"`
-	Image          []string       `json:"image" metadata:",optional"`
-	Expired        string         `json:"expireTime"`
-	Price          string         `json:"price"`
-	Unit           string         `json:"unit"`
-	Status         string         `json:"status"`
-	Description    string         `json:"description"`
-	CertificateUrl string         `json:"certificateUrl"`
-	QRCode		   string		  `json:"qrCode"`
+	ProductCommercialId string         `json:"productCommercialId"`
+	ProductId      		string         `json:"productId"`
+	ProductName    		string         `json:"productName"`
+	Dates          		[]ProductDate  `json:"dates" metadata:",optional"`
+	Image          		[]string       `json:"image" metadata:",optional"`
+	Expired        		string         `json:"expireTime"`
+	Price          		string         `json:"price"`
+	Unit           		string         `json:"unit"`
+	Status         		string         `json:"status"`
+	Description    		string         `json:"description"`
+	CertificateUrl 		string         `json:"certificateUrl"`
+	QRCode		   		string		  `json:"qrCode"`
 }
 
 type ProductPayload struct {
@@ -249,7 +250,8 @@ func initCounter(ctx contractapi.TransactionContextInterface) error {
 
 func parseProductToProductCommercial(product Product) ProductCommercial {
 	productCommercial := ProductCommercial{
-		ProductId: "",
+		ProductCommercialId: "",
+		ProductId: product.ProductId,
 		ProductName: product.ProductName,
 		Dates: product.Dates,
 		Image: product.Image,
@@ -319,7 +321,6 @@ func (s *SmartContract) GetTxTimestampChannel(ctx contractapi.TransactionContext
 	return timeStr, nil
 }
 
-// supplier
 func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInterface, user User, productObj ProductPayload) (*Product, error) {
 	if user.Role != "supplier" {
 		return nil, fmt.Errorf("user must be a supplier")
@@ -413,7 +414,6 @@ func (s *SmartContract) InventoryProduct(ctx contractapi.TransactionContextInter
 	return &product, nil
 }
 
-// Need refactor
 func (s *SmartContract) HarvestProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) (*Product, error) {
 	if user.Role != "supplier" {
 		return nil, fmt.Errorf("user must be a supplier")
@@ -452,7 +452,6 @@ func (s *SmartContract) HarvestProduct(ctx contractapi.TransactionContextInterfa
 	return product, nil
 }
 
-// supplier
 func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) (*Product, error) {
 	if user.Role != "supplier" {
 		return nil, fmt.Errorf("user must be a supplier")
@@ -521,7 +520,6 @@ func (s *SmartContract) AddCertificate(ctx contractapi.TransactionContextInterfa
 	return product, nil
 }
 
-// manufacturer
 func (s *SmartContract) ImportProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) (*Product, error) {
 	if user.Role != "manufacturer" {
 		return nil, fmt.Errorf("user must be a manufacturer")
@@ -644,7 +642,6 @@ func (s *SmartContract) ExportProduct(ctx contractapi.TransactionContextInterfac
 	return productCommercial, nil
 }
 
-// distributor
 func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInterface, user User, productObj ProductCommercial) (*ProductCommercial, error) {
 	if user.Role != "distributor" {
 		return nil, fmt.Errorf("user must be a distributor")
@@ -681,7 +678,6 @@ func (s *SmartContract) DistributeProduct(ctx contractapi.TransactionContextInte
 	return productCommercial, nil
 }
 
-// retailer
 func (s *SmartContract) ImportRetailerProduct(ctx contractapi.TransactionContextInterface, user User, productObj ProductCommercial) (*ProductCommercial, error) {
 	if user.Role != "retailer" {
 		return nil, fmt.Errorf("user must be a retailer")
@@ -1090,7 +1086,6 @@ func (s *SmartContract) GetAllOrdersOfRetailer(ctx contractapi.TransactionContex
 	return orders, nil
 }
 
-// retailer
 func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj OrderForCreate) (*Order, error) {
 	if user.Role != "retailer" {
 		return nil, fmt.Errorf("user must be a retailer")
@@ -1131,12 +1126,9 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 		productCommercialCounter++
 
 		parsedProduct := parseProductToProductCommercial(*product)
-		parsedProduct.ProductId = "ProductCommercial" + strconv.Itoa(productCommercialCounter)
+		parsedProduct.ProductCommercialId = "ProductCommercial" + strconv.Itoa(productCommercialCounter)
 		parsedProduct.QRCode = item.QRCode
 		productCommercialAsBytes, _ := json.Marshal(parsedProduct)
-	
-		// incrementCounter(ctx, "ProductCommercialCounterNO")
-
 		ctx.GetStub().PutState(parsedProduct.ProductId, productCommercialAsBytes)
 
 		productItem := ProductCommercialItem{ 
@@ -1169,7 +1161,6 @@ func (s *SmartContract) CreateOrder(ctx contractapi.TransactionContextInterface,
 	return &order, nil
 }
 
-// manufacturer
 func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface, user User, orderId string) (*Order, error) {
 	if user.Role != "manufacturer" {
 		return nil, fmt.Errorf("user must be a manufacturer")
@@ -1242,7 +1233,6 @@ func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface
 	return order, nil
 }
 
-// distributor
 func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface, user User, orderObj OrderForUpdateFinish) (*Order, error) {
 	if user.Role != "distributor" {
 		return nil, fmt.Errorf("user must be a distributor")
@@ -1313,7 +1303,6 @@ func (s *SmartContract) UpdateOrder(ctx contractapi.TransactionContextInterface,
 	return order, nil
 }
 
-// distributor
 func (s *SmartContract) FinishOrder(ctx contractapi.TransactionContextInterface, user User, orderObj OrderForUpdateFinish) (*Order, error) {
 	if user.Role != "distributor" {
 		return nil, fmt.Errorf("user must be a distributor")

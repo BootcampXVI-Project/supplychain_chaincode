@@ -1208,8 +1208,8 @@ func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface
 		productItemList = append(productItemList, productItem)
 	}
 
-	// if order.Distributor.UserId != user.UserId {
-	// 	return nil, fmt.Errorf("Permission denied!")
+	// if order.Manufacturer.UserId != user.UserId {
+	// 	return nil, fmt.Errorf("This manufacturer is not allowed to approve this order!")
 	// }
 
 	actor := parseUserToActor(user)
@@ -1226,6 +1226,51 @@ func (s *SmartContract) ApproveOrder(ctx contractapi.TransactionContextInterface
 	order.Manufacturer = actor
 	order.UpdateDate = txTimeAsPtr
 	order.Status = "APPROVED"
+
+	updateOrderAsBytes, _ := json.Marshal(order)
+	ctx.GetStub().PutState(order.OrderId, updateOrderAsBytes)
+
+	return order, nil
+}
+
+func (s *SmartContract) RejectOrder(ctx contractapi.TransactionContextInterface, user User, orderId string) (*Order, error) {
+	if user.Role != "manufacturer" {
+		return nil, fmt.Errorf("user must be a manufacturer")
+	}
+
+	orderAsBytes, err := ctx.GetStub().GetState(orderId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read from world state. %s", err.Error())
+	}
+	if orderAsBytes == nil {
+		return nil, fmt.Errorf("%s does not exist", orderId)
+	}
+
+	order := new(Order)
+	_ = json.Unmarshal(orderAsBytes, order)
+
+	txTimeAsPtr, errTx := s.GetTxTimestampChannel(ctx)
+	if errTx != nil {
+		return nil, fmt.Errorf("transaction timeStamp error")
+	}
+
+	// if order.Manufacturer.UserId != user.UserId {
+	// 	return nil, fmt.Errorf("This manufacturer is not allowed to approve this order!")
+	// }
+
+	actor := parseUserToActor(user)
+	delivery := DeliveryStatus{
+		Status:        	"REJECTED",
+		DeliveryDate:  	txTimeAsPtr,
+		Address: 		actor.Address,
+		Actor: 			actor,
+	}
+	deliveryStatuses := append(order.DeliveryStatuses, delivery)
+
+	order.DeliveryStatuses = deliveryStatuses
+	order.Manufacturer = actor
+	order.UpdateDate = txTimeAsPtr
+	order.Status = "REJECTED"
 
 	updateOrderAsBytes, _ := json.Marshal(order)
 	ctx.GetStub().PutState(order.OrderId, updateOrderAsBytes)

@@ -19,17 +19,17 @@ type CounterNO struct {
 }
 
 type User struct {
-	UserId      string `json:"userId"`
-	PhoneNumber string `json:"phoneNumber"`
-	Email       string `json:"email"`
-	Password    string `json:"password"`
-	FullName    string `json:"fullName"`
-	UserName    string `json:"userName"`
-	Address     string `json:"address"`
-	Avatar     	string `json:"avatar"`
-	Role        string `json:"role"`
-	Status      string `json:"status"`
-	Signature   string `json:"signature"`
+	UserId      string 			`json:"userId"`
+	PhoneNumber string 			`json:"phoneNumber"`
+	Email       string 			`json:"email"`
+	Password    string 			`json:"password"`
+	FullName    string 			`json:"fullName"`
+	UserName    string 			`json:"userName"`
+	Address     string 			`json:"address"`
+	Avatar     	string 			`json:"avatar"`
+	Role        string 			`json:"role"`
+	Status      string 			`json:"status"`
+	Signature   string 			`json:"signature"`
 	Cart		[]ProductIdItem `json:"cart" metadata:",optional"`
 }
 
@@ -94,7 +94,7 @@ type ProductCommercial struct {
 	Status         		string         `json:"status"`
 	Description    		string         `json:"description"`
 	CertificateUrl 		string         `json:"certificateUrl"`
-	QRCode		   		string		  `json:"qrCode"`
+	QRCode		   		string		   `json:"qrCode"`
 }
 
 type ProductPayload struct {
@@ -108,24 +108,24 @@ type ProductPayload struct {
 }
 
 type ProductHistory struct {
-	Record    *Product  			`json:"record"`
-	TxId      string    			`json:"txId"`
-	Timestamp time.Time 			`json:"timestamp"`
-	IsDelete  bool      			`json:"isDelete"`
+	Record    		*Product  			`json:"record"`
+	TransactionId   string    			`json:"transactionId"`
+	Timestamp 		time.Time 			`json:"timestamp"`
+	IsDelete  		bool      			`json:"isDelete"`
 }
 
 type ProductCommercialHistory struct {
-	Record    *ProductCommercial  `json:"record"`
-	TxId      string    `json:"txId"`
-	Timestamp time.Time `json:"timestamp"`
-	IsDelete  bool      `json:"isDelete"`
+	Record    		*ProductCommercial  `json:"record"`
+	TransactionId   string    			`json:"transactionId"`
+	Timestamp 		time.Time 			`json:"timestamp"`
+	IsDelete  		bool      			`json:"isDelete"`
 }
 
 type OrderHistory struct {
-	Record    *Order    `json:"record"`
-	TxId      string    `json:"txId"`
-	Timestamp time.Time `json:"timestamp"`
-	IsDelete  bool      `json:"isDelete"`
+	Record    		*Order    `json:"record"`
+	TransactionId   string    `json:"transactionId"`
+	Timestamp 		time.Time `json:"timestamp"`
+	IsDelete  		bool      `json:"isDelete"`
 }
 
 type ProductItem struct {
@@ -166,18 +166,18 @@ type DeliveryStatusCreateOrder struct {
 }
 
 type Order struct {
-	OrderId 		string      	 `json:"orderId"`
-	ProductItemList []ProductCommercialItem 	 `json:"productItemList" metadata:",optional"`
-	DeliveryStatuses[]DeliveryStatus `json:"deliveryStatuses" metadata:",optional"`
-	Signatures 		[]string 		 `json:"signatures"`
-	Status          string     	 	 `json:"status"`
-	CreateDate 		string 			 `json:"createDate"`
-	UpdateDate 		string 			 `json:"updateDate"`
-	FinishDate   	string      	 `json:"finishDate"`
-	QRCode		   	string		 	 `json:"qrCode"`
-	Retailer     	Actor 			 `json:"retailer"`
-	Manufacturer  	Actor 			 `json:"manufacturer"`
-	Distributor  	Actor 			 `json:"distributor"`
+	OrderId 		string      	 		`json:"orderId"`
+	ProductItemList []ProductCommercialItem	`json:"productItemList" metadata:",optional"`
+	DeliveryStatuses[]DeliveryStatus 		`json:"deliveryStatuses" metadata:",optional"`
+	Signatures 		[]string 		 		`json:"signatures"`
+	Status          string     	 	 		`json:"status"`
+	CreateDate 		string 			 		`json:"createDate"`
+	UpdateDate 		string 			 		`json:"updateDate"`
+	FinishDate   	string      	 		`json:"finishDate"`
+	QRCode		   	string		 	 		`json:"qrCode"`
+	Retailer     	Actor 			 		`json:"retailer"`
+	Manufacturer  	Actor 			 		`json:"manufacturer"`
+	Distributor  	Actor 			 		`json:"distributor"`
 }
 
 type OrderForCreate struct {
@@ -341,23 +341,6 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 		Time: txTimeAsPtr,
 		Actor: actor,
 	}
-	// date1 := ProductDate{
-	// 	Status: "HARVESTED",
-	// 	Time: txTimeAsPtr,
-	// 	Actor: actor,
-	// }
-	// date2 := ProductDate{
-	// 	Status: "IMPORTED",
-	// 	Time: txTimeAsPtr,
-	// 	Actor: actor,
-	// }
-	// date3 := ProductDate{
-	// 	Status: "MANUFACTURED",
-	// 	Time: txTimeAsPtr,
-	// 	Actor: actor,
-	// }
-	// dates := append(datesArray, date, date1, date2, date3)
-
 	dates := append(datesArray, date)
 	
 	var product = Product{
@@ -494,26 +477,6 @@ func (s *SmartContract) UpdateProduct(ctx contractapi.TransactionContextInterfac
 
 	// update product
 	product = &productObj
-	updatedProductAsBytes, _ := json.Marshal(product)
-	ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
-
-	return product, nil
-}
-
-func (s *SmartContract) AddCertificate(ctx contractapi.TransactionContextInterface, user User, productObj Product) (*Product, error) {
-	if user.Role != "supplier" {
-		return nil, fmt.Errorf("user must be a supplier")
-	}
-
-	// get product
-	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
-	if productBytes == nil {
-		return nil, fmt.Errorf("product not found")
-	}
-	product := new(Product)
-	_ = json.Unmarshal(productBytes, product)
-
-	product.CertificateUrl = productObj.CertificateUrl
 	updatedProductAsBytes, _ := json.Marshal(product)
 	ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
 
@@ -933,53 +896,6 @@ func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface
 
 	return orders, nil
 }
-
-// func (s *SmartContract) GetAllOrdersByAddress(ctx contractapi.TransactionContextInterface, longitude string, latitude string, shippingStatus string) ([]*Order, error) {
-    // assetCounter, _ := getCounter(ctx, "OrderCounterNO")
-	// startKey := "Order1"
-	// endKey := "Order" + strconv.Itoa(assetCounter+1)
-	// resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
-
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// defer resultsIterator.Close()
-	// var orders []*Order
-
-	// for resultsIterator.HasNext() {
-	// 	response, err := resultsIterator.Next()
-
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-
-	// 	var order Order
-	// 	_ = json.Unmarshal(response.Value, &order)
-
-	// 	if shippingStatus == "" {
-	// 		for _, status := range order.DeliveryStatus {
-	// 			if status.Longitude == longitude && status.Latitude == latitude {
-	// 				orders = append(orders, &order)
-	// 				break 
-	// 			}
-	// 		}
-	// 	} else {
-	// 		for _, status := range order.DeliveryStatus {
-	// 			if status.Longitude == longitude && status.Latitude == latitude && order.Status == shippingStatus {
-	// 				orders = append(orders, &order)
-	// 				break 
-	// 			}
-	// 		}
-	// 	}
-	// }
-
-	// if len(orders) == 0 {
-	// 	return []*Order{}, nil
-	// }
-
-	// return orders, nil
-// }
 
 func (s *SmartContract) GetAllOrdersOfManufacturer(ctx contractapi.TransactionContextInterface, userId string, status string) ([]*Order, error) {
     assetCounter, _ := getCounter(ctx, "OrderCounterNO")
@@ -1452,16 +1368,65 @@ func (s *SmartContract) GetProductTransactionHistory(ctx contractapi.Transaction
 		}
 
 		productHistory := ProductHistory{
-			Record:    &product,
-			TxId:      response.TxId,
+			Record: &product,
+			TransactionId: response.TxId,
 			Timestamp: timestamp,
-			IsDelete:  response.IsDelete,
+			IsDelete: response.IsDelete,
 		}
 		histories = append(histories, productHistory)
 	}
 
 	if len(histories) == 0 {
 		return []ProductHistory{}, nil
+	}
+
+	return histories, nil
+}
+
+func (s *SmartContract) GetProductCommercialTransactionHistory(ctx contractapi.TransactionContextInterface, productCommercialId string) ([]ProductCommercialHistory, error) {
+	resultsIterator, err := ctx.GetStub().GetHistoryForKey(productCommercialId)
+	if err != nil {
+		return nil, fmt.Errorf(err.Error())
+	}
+
+	defer resultsIterator.Close()
+	var histories []ProductCommercialHistory
+
+	for resultsIterator.HasNext() {
+		response, err := resultsIterator.Next()
+
+		if err != nil {
+			return nil, err
+		}
+
+		var productCommercial ProductCommercial
+		if len(response.Value) > 0 {
+			err = json.Unmarshal(response.Value, &productCommercial)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			productCommercial = ProductCommercial{
+				ProductCommercialId: productCommercialId,
+			}
+		}
+
+		timestamp, err := ptypes.Timestamp(response.Timestamp)
+		if err != nil {
+			return nil, err
+		}
+
+		ProductCommercialHistory := ProductCommercialHistory{
+			Record: &productCommercial,
+			TransactionId: response.TxId,
+			Timestamp: timestamp,
+			IsDelete: response.IsDelete,
+		}
+		histories = append(histories, ProductCommercialHistory)
+	}
+
+	if len(histories) == 0 {
+		return []ProductCommercialHistory{}, nil
 	}
 
 	return histories, nil
@@ -1501,65 +1466,16 @@ func (s *SmartContract) GetOrderTransactionHistory(ctx contractapi.TransactionCo
 		}
 
 		orderHistory := OrderHistory{
-			Record:    &order,
-			TxId:      response.TxId,
+			Record: &order,
+			TransactionId: response.TxId,
 			Timestamp: timestamp,
-			IsDelete:  response.IsDelete,
+			IsDelete: response.IsDelete,
 		}
 		histories = append(histories, orderHistory)
 	}
 
 	if len(histories) == 0 {
 		return []OrderHistory{}, nil
-	}
-
-	return histories, nil
-}
-
-func (s *SmartContract) GetProductCommercialTransactionHistory(ctx contractapi.TransactionContextInterface, productId string) ([]ProductCommercialHistory, error) {
-	resultsIterator, err := ctx.GetStub().GetHistoryForKey(productId)
-	if err != nil {
-		return nil, fmt.Errorf(err.Error())
-	}
-
-	defer resultsIterator.Close()
-	var histories []ProductCommercialHistory
-
-	for resultsIterator.HasNext() {
-		response, err := resultsIterator.Next()
-
-		if err != nil {
-			return nil, err
-		}
-
-		var productCommercial ProductCommercial
-		if len(response.Value) > 0 {
-			err = json.Unmarshal(response.Value, &productCommercial)
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			productCommercial = ProductCommercial{
-				ProductId: productId,
-			}
-		}
-
-		timestamp, err := ptypes.Timestamp(response.Timestamp)
-		if err != nil {
-			return nil, err
-		}
-
-		ProductCommercialHistory := ProductCommercialHistory{
-			Record:    &productCommercial,
-			TxId:      response.TxId,
-			Timestamp: timestamp,
-			IsDelete:  response.IsDelete,
-		}
-		histories = append(histories, ProductCommercialHistory)
-	}
-
-	if len(histories) == 0 {
-		return []ProductCommercialHistory{}, nil
 	}
 
 	return histories, nil

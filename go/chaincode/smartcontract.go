@@ -802,7 +802,7 @@ func (s *SmartContract) GetAllProductsCommercial(ctx contractapi.TransactionCont
 	var startKey string = "ProductCommercial1"
 	var endKey string
 
-	// Limit product amount: > 99 products
+	// Limit product commercial amount: > 99 products
 	if productCounter == 99 {
 		endKey = "ProductCommercial99"
 	} else
@@ -822,7 +822,6 @@ func (s *SmartContract) GetAllProductsCommercial(ctx contractapi.TransactionCont
 	defer resultsIterator.Close()
 
 	var productCommercials []*ProductCommercial
-
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 		if err != nil {
@@ -862,19 +861,30 @@ func (s *SmartContract) GetOrder(ctx contractapi.TransactionContextInterface, Or
 }
 
 func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface, status string) ([]*Order, error) {
-	assetCounter, _ := getCounter(ctx, "OrderCounterNO")
-	startKey := "Order1"
-	endKey := "Order" + strconv.Itoa(assetCounter+1)
-	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+	orderCounter, _ := getCounter(ctx, "OrderCounterNO")
+	var startKey string = "Order1"
+	var endKey string
 
+	// Limit order amount: > 99 orders
+	if orderCounter == 99 {
+		endKey = "Order99"
+	} else
+		if orderCounter >= 89 && orderCounter <= 98 {
+			endKey = "Order" + strconv.Itoa(orderCounter+1)
+		} else
+			if orderCounter >= 9 {
+				endKey = "Order9"
+			} else {
+				endKey = "Order" + strconv.Itoa(orderCounter+1)
+			}
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey+"\x00")
 	if err != nil {
 		return nil, err
 	}
-
 	defer resultsIterator.Close()
+	
 	var orders []*Order
-
-
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 
@@ -898,18 +908,30 @@ func (s *SmartContract) GetAllOrders(ctx contractapi.TransactionContextInterface
 }
 
 func (s *SmartContract) GetAllOrdersOfManufacturer(ctx contractapi.TransactionContextInterface, userId string, status string) ([]*Order, error) {
-    assetCounter, _ := getCounter(ctx, "OrderCounterNO")
-	startKey := "Order1"
-	endKey := "Order" + strconv.Itoa(assetCounter+1)
-	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+    orderCounter, _ := getCounter(ctx, "OrderCounterNO")
+	var startKey string = "Order1"
+	var endKey string
 
+	// Limit order amount: > 99 orders
+	if orderCounter == 99 {
+		endKey = "Order99"
+	} else
+		if orderCounter >= 89 && orderCounter <= 98 {
+			endKey = "Order" + strconv.Itoa(orderCounter+1)
+		} else
+			if orderCounter >= 9 {
+				endKey = "Order9"
+			} else {
+				endKey = "Order" + strconv.Itoa(orderCounter+1)
+			}
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey+"\x00")
 	if err != nil {
 		return nil, err
 	}
-
 	defer resultsIterator.Close()
-	var orders []*Order
 
+	var orders []*Order
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 
@@ -933,18 +955,30 @@ func (s *SmartContract) GetAllOrdersOfManufacturer(ctx contractapi.TransactionCo
 }
 
 func (s *SmartContract) GetAllOrdersOfDistributor(ctx contractapi.TransactionContextInterface, userId string, status string) ([]*Order, error) {
-    assetCounter, _ := getCounter(ctx, "OrderCounterNO")
-	startKey := "Order1"
-	endKey := "Order" + strconv.Itoa(assetCounter+1)
-	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+    orderCounter, _ := getCounter(ctx, "OrderCounterNO")
+	var startKey string = "Order1"
+	var endKey string
 
+	// Limit order amount: > 99 orders
+	if orderCounter == 99 {
+		endKey = "Order99"
+	} else
+		if orderCounter >= 89 && orderCounter <= 98 {
+			endKey = "Order" + strconv.Itoa(orderCounter+1)
+		} else
+			if orderCounter >= 9 {
+				endKey = "Order9"
+			} else {
+				endKey = "Order" + strconv.Itoa(orderCounter+1)
+			}
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey+"\x00")
 	if err != nil {
 		return nil, err
 	}
-
 	defer resultsIterator.Close()
-	var orders []*Order
 
+	var orders []*Order
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 
@@ -968,18 +1002,30 @@ func (s *SmartContract) GetAllOrdersOfDistributor(ctx contractapi.TransactionCon
 }
 
 func (s *SmartContract) GetAllOrdersOfRetailer(ctx contractapi.TransactionContextInterface, userId string, status string) ([]*Order, error) {
-    assetCounter, _ := getCounter(ctx, "OrderCounterNO")
-	startKey := "Order1"
-	endKey := "Order" + strconv.Itoa(assetCounter+1)
-	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+    orderCounter, _ := getCounter(ctx, "OrderCounterNO")
+	var startKey string = "Order1"
+	var endKey string
 
+	// Limit order amount: > 99 orders
+	if orderCounter == 99 {
+		endKey = "Order99"
+	} else
+		if orderCounter >= 89 && orderCounter <= 98 {
+			endKey = "Order" + strconv.Itoa(orderCounter+1)
+		} else
+			if orderCounter >= 9 {
+				endKey = "Order9"
+			} else {
+				endKey = "Order" + strconv.Itoa(orderCounter+1)
+			}
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey+"\x00")
 	if err != nil {
 		return nil, err
 	}
-
 	defer resultsIterator.Close()
-	var orders []*Order
 
+	var orders []*Order
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 

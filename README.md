@@ -59,7 +59,7 @@ cd SupplychainNetwork
 ## Deploy chaincode (smart contract)
 
 ```bash
-  ./network.sh deployCC -ccn basic -ccp ../supplychain_chaincode/go/ -ccl go -cci InitLedger
+./network.sh deployCC -ccn basic -ccp ../supplychain_chaincode/go/ -ccl go -cci InitLedger
 ```
 
 ## Export PATH and FABRIC_CFG_PATH

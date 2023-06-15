@@ -19,17 +19,17 @@ type CounterNO struct {
 }
 
 type User struct {
-	UserId      string `json:"userId"`
-	PhoneNumber string `json:"phoneNumber"`
-	Email       string `json:"email"`
-	Password    string `json:"password"`
-	FullName    string `json:"fullName"`
-	UserName    string `json:"userName"`
-	Address     string `json:"address"`
-	Avatar     	string `json:"avatar"`
-	Role        string `json:"role"`
-	Status      string `json:"status"`
-	Signature   string `json:"signature"`
+	UserId      string 			`json:"userId"`
+	PhoneNumber string 			`json:"phoneNumber"`
+	Email       string 			`json:"email"`
+	Password    string 			`json:"password"`
+	FullName    string 			`json:"fullName"`
+	UserName    string 			`json:"userName"`
+	Address     string 			`json:"address"`
+	Avatar     	string 			`json:"avatar"`
+	Role        string 			`json:"role"`
+	Status      string 			`json:"status"`
+	Signature   string 			`json:"signature"`
 	Cart		[]ProductIdItem `json:"cart" metadata:",optional"`
 }
 
@@ -94,7 +94,7 @@ type ProductCommercial struct {
 	Status         		string         `json:"status"`
 	Description    		string         `json:"description"`
 	CertificateUrl 		string         `json:"certificateUrl"`
-	QRCode		   		string		  `json:"qrCode"`
+	QRCode		   		string		   `json:"qrCode"`
 }
 
 type ProductPayload struct {
@@ -108,17 +108,17 @@ type ProductPayload struct {
 }
 
 type ProductHistory struct {
-	Record    *Product  			`json:"record"`
-	TxId      string    			`json:"txId"`
-	Timestamp time.Time 			`json:"timestamp"`
-	IsDelete  bool      			`json:"isDelete"`
+	Record    *Product  	`json:"record"`
+	TxId      string    	`json:"txId"`
+	Timestamp time.Time 	`json:"timestamp"`
+	IsDelete  bool      	`json:"isDelete"`
 }
 
 type ProductCommercialHistory struct {
-	Record    *ProductCommercial  `json:"record"`
-	TxId      string    `json:"txId"`
-	Timestamp time.Time `json:"timestamp"`
-	IsDelete  bool      `json:"isDelete"`
+	Record    *ProductCommercial  	`json:"record"`
+	TxId      string    			`json:"txId"`
+	Timestamp time.Time 			`json:"timestamp"`
+	IsDelete  bool      			`json:"isDelete"`
 }
 
 type OrderHistory struct {
@@ -166,18 +166,18 @@ type DeliveryStatusCreateOrder struct {
 }
 
 type Order struct {
-	OrderId 		string      	 `json:"orderId"`
-	ProductItemList []ProductCommercialItem 	 `json:"productItemList" metadata:",optional"`
-	DeliveryStatuses[]DeliveryStatus `json:"deliveryStatuses" metadata:",optional"`
-	Signatures 		[]string 		 `json:"signatures"`
-	Status          string     	 	 `json:"status"`
-	CreateDate 		string 			 `json:"createDate"`
-	UpdateDate 		string 			 `json:"updateDate"`
-	FinishDate   	string      	 `json:"finishDate"`
-	QRCode		   	string		 	 `json:"qrCode"`
-	Retailer     	Actor 			 `json:"retailer"`
-	Manufacturer  	Actor 			 `json:"manufacturer"`
-	Distributor  	Actor 			 `json:"distributor"`
+	OrderId 		string      	 		`json:"orderId"`
+	ProductItemList []ProductCommercialItem `json:"productItemList" metadata:",optional"`
+	DeliveryStatuses[]DeliveryStatus 		`json:"deliveryStatuses" metadata:",optional"`
+	Signatures 		[]string 		 		`json:"signatures"`
+	Status          string     	 	 		`json:"status"`
+	CreateDate 		string 			 		`json:"createDate"`
+	UpdateDate 		string 			 		`json:"updateDate"`
+	FinishDate   	string      	 		`json:"finishDate"`
+	QRCode		   	string		 	 		`json:"qrCode"`
+	Retailer     	Actor 			 		`json:"retailer"`
+	Manufacturer  	Actor 			 		`json:"manufacturer"`
+	Distributor  	Actor 			 		`json:"distributor"`
 }
 
 type OrderForCreate struct {
@@ -341,23 +341,6 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 		Time: txTimeAsPtr,
 		Actor: actor,
 	}
-	// date1 := ProductDate{
-	// 	Status: "HARVESTED",
-	// 	Time: txTimeAsPtr,
-	// 	Actor: actor,
-	// }
-	// date2 := ProductDate{
-	// 	Status: "IMPORTED",
-	// 	Time: txTimeAsPtr,
-	// 	Actor: actor,
-	// }
-	// date3 := ProductDate{
-	// 	Status: "MANUFACTURED",
-	// 	Time: txTimeAsPtr,
-	// 	Actor: actor,
-	// }
-	// dates := append(datesArray, date, date1, date2, date3)
-
 	dates := append(datesArray, date)
 	
 	var product = Product{

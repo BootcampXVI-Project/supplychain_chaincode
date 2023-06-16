@@ -435,37 +435,7 @@ func (s *SmartContract) HarvestProduct(ctx contractapi.TransactionContextInterfa
 	return product, nil
 }
 
-func (s *SmartContract) SupplierUpdateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) (*Product, error) {
-	if user.Role != "supplier" {
-		return nil, fmt.Errorf("user must be a supplier")
-	}
-
-	// get product
-	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
-	if productBytes == nil {
-		return nil, fmt.Errorf("product not found")
-	}
-
-	product := new(Product)
-	_ = json.Unmarshal(productBytes, product)
-
-	// update product
-	product.ProductName = productObj.ProductName
-	product.Description = productObj.Description
-	product.Price = productObj.Price
-	product.Amount = productObj.Amount
-
-	updatedProductAsBytes, _ := json.Marshal(product)
-	ctx.GetStub().PutState(product.ProductId, updatedProductAsBytes)
-
-	return product, nil
-}
-
 func (s *SmartContract) UpdateProduct(ctx contractapi.TransactionContextInterface, user User, productObj Product) (*Product, error) {
-	if user.Role != "supplier" && user.Role != "manufacturer" && user.Role != "distributor" && user.Role != "retailer" {
-		return nil, fmt.Errorf("user must be a supplier, manufacturer, distributor, or retailer")
-	}
-
 	// get product
 	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"time"
+	"unicode"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -20,6 +21,7 @@ type CounterNO struct {
 
 type User struct {
 	UserId      string 			`json:"userId"`
+	UserCode    string 			`json:"userCode"`
 	PhoneNumber string 			`json:"phoneNumber"`
 	Email       string 			`json:"email"`
 	Password    string 			`json:"password"`
@@ -33,31 +35,14 @@ type User struct {
 	Cart		[]ProductIdItem `json:"cart" metadata:",optional"`
 }
 
-type UserPayload struct {
-	PhoneNumber string `json:"phoneNumber"`
-	Password    string `json:"password"`
-	Role   		string `json:"role"`
-	Email       string `json:"email"`
-	FullName    string `json:"fullName"`
-	Address     string `json:"address"`
-	Avatar     	string `json:"avatar"`
-	Signature   string `json:"signature"`
-}
-
 type Actor struct {
 	UserId      string `json:"userId"`
+	UserCode    string `json:"userCode"`
 	PhoneNumber string `json:"phoneNumber"`
 	FullName    string `json:"fullName"`
 	Address     string `json:"address"`
 	Avatar     	string `json:"avatar"`
 	Role        string `json:"role"`
-}
-
-type ProductActors struct {
-	SupplierId     string `json:"supplierId"`
-	ManufacturerId string `json:"manufacturerId"`
-	DistributorId  string `json:"distributorId"`
-	RetailerId     string `json:"retailerId"`
 }
 
 type ProductDate struct {
@@ -68,6 +53,7 @@ type ProductDate struct {
 
 type Product struct {
 	ProductId      string         `json:"productId"`
+	ProductCode    string 		  `json:"productCode"`
 	ProductName    string         `json:"productName"`
 	Supplier 	   Actor          `json:"supplier"`
 	Dates          []ProductDate  `json:"dates" metadata:",optional"`
@@ -85,6 +71,7 @@ type Product struct {
 type ProductCommercial struct {
 	ProductCommercialId string         `json:"productCommercialId"`
 	ProductId      		string         `json:"productId"`
+	ProductCode    		string 		   `json:"productCode"`
 	ProductName    		string         `json:"productName"`
 	Dates          		[]ProductDate  `json:"dates" metadata:",optional"`
 	Image          		[]string       `json:"image" metadata:",optional"`
@@ -196,6 +183,7 @@ type OrderForUpdateFinish struct {
 func parseUserToActor(user User) Actor {
 	actor := Actor{
 		UserId:user.UserId,
+		UserCode:user.UserCode,
 		PhoneNumber:user.PhoneNumber,
 		FullName:user.FullName,
 		Address:user.Address,
@@ -203,6 +191,24 @@ func parseUserToActor(user User) Actor {
 		Role:user.Role,
 	}
 	return actor
+}
+
+func getInitials(input string) string {
+	words := strings.Fields(input)
+	initials := make([]rune, 0, len(words))
+
+	for _, word := range words {
+		if len(word) > 0 {
+			for _, char := range word {
+				if unicode.IsLetter(char) && unicode.Is(unicode.ASCII_Hex_Digit, char) {
+					initials = append(initials, unicode.ToUpper(char))
+					break
+				}
+			}
+		}
+	}
+
+	return string(initials)
 }
 
 // Initialize chaincode
@@ -252,6 +258,7 @@ func parseProductToProductCommercial(product Product) ProductCommercial {
 	productCommercial := ProductCommercial{
 		ProductCommercialId: "",
 		ProductId: product.ProductId,
+		ProductCode: product.ProductCode,
 		ProductName: product.ProductName,
 		Dates: product.Dates,
 		Image: product.Image,
@@ -342,9 +349,11 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 		Actor: actor,
 	}
 	dates := append(datesArray, date)
+	productCode := getInitials() + "-" + actor.UserCode
 	
 	var product = Product{
 		ProductId:      "Product" + strconv.Itoa(productCounter),
+		ProductCode:    productCode,
 		ProductName:    productObj.ProductName,
 		Image:          productObj.Image,
 		Dates:          dates,
@@ -376,6 +385,7 @@ func (s *SmartContract) InventoryProduct(ctx contractapi.TransactionContextInter
 	
 	var product = Product{
 		ProductId:      "Product" + strconv.Itoa(productCounter),
+		ProductCode:    productObj.ProductCode,
 		ProductName:    productObj.ProductName,
 		Image:          productObj.Image,
 		Dates:          productObj.Dates,
@@ -616,7 +626,7 @@ func (s *SmartContract) ImportRetailerProduct(ctx contractapi.TransactionContext
 		return nil, fmt.Errorf("user must be a retailer")
 	}
 
-	// get product details from the stub ie. Chaincode stub in network using the product id passed
+	// get product
 	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return nil, fmt.Errorf("product not found")
@@ -654,7 +664,7 @@ func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface,
 		return nil, fmt.Errorf("user must be a retailer")
 	}
 
-	// get product details from the stub ie. Chaincode stub in network using the product id passed
+	// get product
 	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return nil, fmt.Errorf("product not found")

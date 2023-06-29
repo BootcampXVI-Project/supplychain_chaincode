@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strconv"
 	"time"
-	"unicode"
 
 	"github.com/golang/protobuf/ptypes"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
@@ -30,6 +29,7 @@ type User struct {
 	Address     string 			`json:"address"`
 	Avatar     	string 			`json:"avatar"`
 	Role        string 			`json:"role"`
+	RoleId      int 			`json:"roleId"`
 	Status      string 			`json:"status"`
 	Signature   string 			`json:"signature"`
 	Cart		[]ProductIdItem `json:"cart" metadata:",optional"`
@@ -86,6 +86,7 @@ type ProductCommercial struct {
 
 type ProductPayload struct {
 	ProductName    string        `json:"productName"`
+	ProductCode    string        `json:"productCode"`
 	Image          []string      `json:"image" metadata:",optional"`
 	Price          string        `json:"price"`
 	Amount         string        `json:"amount"`
@@ -191,24 +192,6 @@ func parseUserToActor(user User) Actor {
 		Role:user.Role,
 	}
 	return actor
-}
-
-func getInitials(input string) string {
-	words := strings.Fields(input)
-	initials := make([]rune, 0, len(words))
-
-	for _, word := range words {
-		if len(word) > 0 {
-			for _, char := range word {
-				if unicode.IsLetter(char) && unicode.Is(unicode.ASCII_Hex_Digit, char) {
-					initials = append(initials, unicode.ToUpper(char))
-					break
-				}
-			}
-		}
-	}
-
-	return string(initials)
 }
 
 // Initialize chaincode
@@ -349,11 +332,10 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 		Actor: actor,
 	}
 	dates := append(datesArray, date)
-	productCode := getInitials() + "-" + actor.UserCode
 	
 	var product = Product{
 		ProductId:      "Product" + strconv.Itoa(productCounter),
-		ProductCode:    productCode,
+		ProductCode:    productObj.ProductCode,
 		ProductName:    productObj.ProductName,
 		Image:          productObj.Image,
 		Dates:          dates,

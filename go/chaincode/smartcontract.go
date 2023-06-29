@@ -20,6 +20,7 @@ type CounterNO struct {
 
 type User struct {
 	UserId      string 			`json:"userId"`
+	UserCode    string 			`json:"userCode"`
 	PhoneNumber string 			`json:"phoneNumber"`
 	Email       string 			`json:"email"`
 	Password    string 			`json:"password"`
@@ -28,36 +29,20 @@ type User struct {
 	Address     string 			`json:"address"`
 	Avatar     	string 			`json:"avatar"`
 	Role        string 			`json:"role"`
+	RoleId      int 			`json:"roleId"`
 	Status      string 			`json:"status"`
 	Signature   string 			`json:"signature"`
 	Cart		[]ProductIdItem `json:"cart" metadata:",optional"`
 }
 
-type UserPayload struct {
-	PhoneNumber string `json:"phoneNumber"`
-	Password    string `json:"password"`
-	Role   		string `json:"role"`
-	Email       string `json:"email"`
-	FullName    string `json:"fullName"`
-	Address     string `json:"address"`
-	Avatar     	string `json:"avatar"`
-	Signature   string `json:"signature"`
-}
-
 type Actor struct {
 	UserId      string `json:"userId"`
+	UserCode    string `json:"userCode"`
 	PhoneNumber string `json:"phoneNumber"`
 	FullName    string `json:"fullName"`
 	Address     string `json:"address"`
 	Avatar     	string `json:"avatar"`
 	Role        string `json:"role"`
-}
-
-type ProductActors struct {
-	SupplierId     string `json:"supplierId"`
-	ManufacturerId string `json:"manufacturerId"`
-	DistributorId  string `json:"distributorId"`
-	RetailerId     string `json:"retailerId"`
 }
 
 type ProductDate struct {
@@ -68,6 +53,7 @@ type ProductDate struct {
 
 type Product struct {
 	ProductId      string         `json:"productId"`
+	ProductCode    string 		  `json:"productCode"`
 	ProductName    string         `json:"productName"`
 	Supplier 	   Actor          `json:"supplier"`
 	Dates          []ProductDate  `json:"dates" metadata:",optional"`
@@ -85,6 +71,7 @@ type Product struct {
 type ProductCommercial struct {
 	ProductCommercialId string         `json:"productCommercialId"`
 	ProductId      		string         `json:"productId"`
+	ProductCode    		string 		   `json:"productCode"`
 	ProductName    		string         `json:"productName"`
 	Dates          		[]ProductDate  `json:"dates" metadata:",optional"`
 	Image          		[]string       `json:"image" metadata:",optional"`
@@ -99,6 +86,7 @@ type ProductCommercial struct {
 
 type ProductPayload struct {
 	ProductName    string        `json:"productName"`
+	ProductCode    string        `json:"productCode"`
 	Image          []string      `json:"image" metadata:",optional"`
 	Price          string        `json:"price"`
 	Amount         string        `json:"amount"`
@@ -196,6 +184,7 @@ type OrderForUpdateFinish struct {
 func parseUserToActor(user User) Actor {
 	actor := Actor{
 		UserId:user.UserId,
+		UserCode:user.UserCode,
 		PhoneNumber:user.PhoneNumber,
 		FullName:user.FullName,
 		Address:user.Address,
@@ -252,6 +241,7 @@ func parseProductToProductCommercial(product Product) ProductCommercial {
 	productCommercial := ProductCommercial{
 		ProductCommercialId: "",
 		ProductId: product.ProductId,
+		ProductCode: product.ProductCode,
 		ProductName: product.ProductName,
 		Dates: product.Dates,
 		Image: product.Image,
@@ -345,6 +335,7 @@ func (s *SmartContract) CultivateProduct(ctx contractapi.TransactionContextInter
 	
 	var product = Product{
 		ProductId:      "Product" + strconv.Itoa(productCounter),
+		ProductCode:    productObj.ProductCode,
 		ProductName:    productObj.ProductName,
 		Image:          productObj.Image,
 		Dates:          dates,
@@ -376,6 +367,7 @@ func (s *SmartContract) InventoryProduct(ctx contractapi.TransactionContextInter
 	
 	var product = Product{
 		ProductId:      "Product" + strconv.Itoa(productCounter),
+		ProductCode:    productObj.ProductCode,
 		ProductName:    productObj.ProductName,
 		Image:          productObj.Image,
 		Dates:          productObj.Dates,
@@ -616,7 +608,7 @@ func (s *SmartContract) ImportRetailerProduct(ctx contractapi.TransactionContext
 		return nil, fmt.Errorf("user must be a retailer")
 	}
 
-	// get product details from the stub ie. Chaincode stub in network using the product id passed
+	// get product
 	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return nil, fmt.Errorf("product not found")
@@ -654,7 +646,7 @@ func (s *SmartContract) SellProduct(ctx contractapi.TransactionContextInterface,
 		return nil, fmt.Errorf("user must be a retailer")
 	}
 
-	// get product details from the stub ie. Chaincode stub in network using the product id passed
+	// get product
 	productBytes, _ := ctx.GetStub().GetState(productObj.ProductId)
 	if productBytes == nil {
 		return nil, fmt.Errorf("product not found")
